@@ -1,4 +1,4 @@
-# Elancer Freelancing Platform
+# laravel-freelancing-platform
 
 A Laravel-based freelancing marketplace platform built to manage projects, proposals, contracts, payments, messaging, and client–freelancer workflows.
 
@@ -95,7 +95,7 @@ This project demonstrates practical experience in:
 
 ```bash
 git clone https://github.com/omarmusallam/laravel-freelancing-platform.git
-cd laravel-elancer
+cd laravel-freelancing-platform
 composer install
 npm install
 cp .env.example .env
