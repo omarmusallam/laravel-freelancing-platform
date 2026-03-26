@@ -1,64 +1,105 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Elancer Freelancing Platform
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel-based freelancing marketplace platform built to manage projects, proposals, contracts, payments, messaging, and client–freelancer workflows.
 
-## About Laravel
+This project demonstrates practical experience in building a real-world service marketplace with role-based workflows, business logic, and multilingual support.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Project Status
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Core marketplace workflows, including project posting, proposal handling, contracts, payments, and messaging, are implemented. The project is being continuously refined as part of my professional portfolio.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Overview
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Elancer is a web-based freelancing platform that allows clients to post projects and freelancers to submit proposals, communicate, manage contracts, and follow project-related workflows.
 
-## Laravel Sponsors
+The platform was developed to simulate real freelancing marketplace logic with structured project flows, role-based interactions, and administrative/business features.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## Key Features
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+- Client and freelancer role-based workflow
+- Project posting and management
+- Proposal submission and review
+- Contract management
+- Payment-related workflows
+- Messaging system
+- Categories and tags
+- Project filtering and search logic
+- API support
+- Authentication and token-based access
+- Arabic and English language support
+- Dashboard and management features
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Tech Stack
 
-## Code of Conduct
+- **Backend:** PHP, Laravel
+- **Database:** MySQL
+- **Frontend:** Blade, JavaScript, Tailwind CSS
+- **Authentication:** Laravel auth / token-based authentication
+- **Architecture:** Web + API support
+- **Other Features:** Localization, filtering, project workflow logic
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Main Modules
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Client Side
+- Post and manage projects
+- Review received proposals
+- Manage contracts and project flow
+- Interact with freelancers through the platform
 
-## License
+### Freelancer Side
+- Browse available projects
+- Submit proposals
+- Track contracts and work-related activity
+- Interact with clients
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Marketplace Logic
+- Categories and tags
+- Project filtering
+- Budget and type handling
+- Business rules for proposals and contracts
+
+### Communication & Payments
+- Messaging system between users
+- Payment workflow support
+- Project-related interactions and status updates
+
+---
+
+## Highlighted Technical Areas
+
+This project demonstrates practical experience in:
+
+- Marketplace platform development
+- Laravel business workflow implementation
+- Role-based system design
+- Proposal and contract logic
+- Payment-related workflow development
+- Filtering and categorization systems
+- Messaging workflow integration
+- Multilingual application development
+- Web and API architecture
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/omarmusallam/laravel-freelancing-platform.git
+cd laravel-elancer
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm run build
+php artisan serve
