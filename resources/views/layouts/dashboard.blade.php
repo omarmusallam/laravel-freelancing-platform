@@ -17,6 +17,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="{{ asset('assets/dashboard/plugins/fontawesome-free/css/all.min.css') }}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('assets/dashboard/dist/css/adminlte.min.css') }}">
+    <style>
+        .content-wrapper .card {
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            border: 0;
+        }
+        .small-box {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        .nav-sidebar .nav-link p {
+            white-space: normal;
+        }
+    </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -43,9 +56,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <i class="fas fa-search"></i>
                     </a>
                     <div class="navbar-search-block">
-                        <form class="form-inline">
+                        <form class="form-inline" action="{{ route('dashboard.projects.index') }}" method="get">
                             <div class="input-group input-group-sm">
-                                <input class="form-control form-control-navbar" type="search" placeholder="Search"
+                                <input class="form-control form-control-navbar" type="search" placeholder="Search projects"
+                                    name="q"
                                     aria-label="Search">
                                 <div class="input-group-append">
                                     <button class="btn btn-navbar" type="submit">
@@ -60,69 +74,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </div>
                 </li>
 
-                <!-- Messages Dropdown Menu -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link" data-toggle="dropdown" href="#">
-                        <i class="far fa-comments"></i>
-                        <span class="badge badge-danger navbar-badge">3</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <a href="#" class="dropdown-item">
-                            <!-- Message Start -->
-                            <div class="media">
-                                <img src="{{ asset('assets/dashboard/dist/img/user1-128x128.jpg') }}" alt="User Avatar"
-                                    class="img-size-50 mr-3 img-circle">
-                                <div class="media-body">
-                                    <h3 class="dropdown-item-title">
-                                        Brad Diesel
-                                        <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
-                                    </h3>
-                                    <p class="text-sm">Call me whenever you can...</p>
-                                    <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                                </div>
-                            </div>
-                            <!-- Message End -->
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
-                    </div>
-                </li>
-                <!-- Notifications Dropdown Menu -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link" data-toggle="dropdown" href="#">
-                        <i class="far fa-bell"></i>
-                        <span class="badge badge-warning navbar-badge">15</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                        <span class="dropdown-header">15 Notifications</span>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-envelope mr-2"></i> 4 new messages
-                            <span class="float-right text-muted text-sm">3 mins</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-users mr-2"></i> 8 friend requests
-                            <span class="float-right text-muted text-sm">12 hours</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-file mr-2"></i> 3 new reports
-                            <span class="float-right text-muted text-sm">2 days</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
-                    </div>
-                </li>
                 <li class="nav-item">
                     <a class="nav-link" data-widget="fullscreen" href="#" role="button">
                         <i class="fas fa-expand-arrows-alt"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#"
-                        role="button">
-                        <i class="fas fa-th-large"></i>
                     </a>
                 </li>
             </ul>
@@ -146,8 +100,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <img src="{{ asset('images/img.jpeg') }}" class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <div style="color: rgba(255,255,255,.8)">{{ Auth::user()->name }}</div><br>
-                        <form action="{{ route('logout') }}" method="POST">
+                        <div style="color: rgba(255,255,255,.8)">{{ auth('admin')->user()->name }}</div><br>
+                        <form action="{{ route('admin.logout') }}" method="POST">
                             @csrf
                             <button class="btn btn-sm btn-outline-danger" type="submit">Logout</button>
                         </form>
@@ -181,6 +135,34 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.admins.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/admins*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <p>Admins</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.users.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/users*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-users"></i>
+                                <p>Users</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.projects.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/projects*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-briefcase"></i>
+                                <p>Projects</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.proposals.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/proposals*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-signature"></i>
+                                <p>Proposals</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
                 <nav class="mt-2">
@@ -206,7 +188,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <i class="nav-icon fas fa-book"></i>
                                 <p>
                                     Roles
-                                    <span class="right badge badge-danger">New</span>
                                 </p>
                             </a>
                         </li>
@@ -249,26 +230,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div>
         <!-- /.content-wrapper -->
 
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Control sidebar content goes here -->
-            <div class="p-3">
-                <h5>Title</h5>
-                <p>Sidebar content</p>
-            </div>
-        </aside>
-        <!-- /.control-sidebar -->
-
         <!-- Main Footer -->
         <footer class="main-footer">
             <!-- To the right -->
             <div class="float-right d-none d-sm-inline">
-                Anything you want
+                Admin control center
             </div>
             <!-- Default to the left -->
-            <strong>Copyright &copy; 2014-2021 <a href="{{ route('home') }}">{{ config('app.name') }}</a>.</strong>
-            All
-            rights reserved.
+            <strong>Copyright &copy; {{ now()->year }} <a href="{{ route('home') }}">{{ config('app.name') }}</a>.</strong>
+            All rights reserved.
         </footer>
     </div>
     <!-- ./wrapper -->

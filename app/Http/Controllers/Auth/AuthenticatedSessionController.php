@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
 
         return redirect()->intended(
             $this->guard == 'admin'
-            ? '/dashboard'
+            ? route('dashboard.dashboard')
             : RouteServiceProvider::HOME
         );
     }

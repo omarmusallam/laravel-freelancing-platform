@@ -31,13 +31,18 @@ Route::group([
 ], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
+    Route::get('projects', [ProjectsController::class, 'index'])
+        ->name('projects.browse');
+
     Route::get('projects/{project}', [ProjectsController::class, 'show'])
         ->name('projects.show');
 });
 
-Route::get('messages', [MessagesController::class, 'create'])
-    ->name('messages');
-Route::post('messages', [MessagesController::class, 'store']);
+Route::middleware('auth:web')->group(function () {
+    Route::get('messages', [MessagesController::class, 'create'])
+        ->name('messages');
+    Route::post('messages', [MessagesController::class, 'store']);
+});
 
 Route::get('otp/request', [OtpController::class, 'create'])->name('otp.create');
 Route::post('otp/request', [OtpController::class, 'store']);
@@ -47,6 +52,7 @@ Route::post('otp/verify', [OtpController::class, 'verify']);
 require __DIR__ . '/dashboard.php';
 require __DIR__ . '/freelancer.php';
 require __DIR__ . '/client.php';
+require __DIR__ . '/auth.php';
 
 Route::get('payments/create', [PaymentsController::class, 'create'])->name('payments.create');
 Route::get('/payments/callback/success', [PaymentsCallbackController::class, 'success'])->name('payments.success');

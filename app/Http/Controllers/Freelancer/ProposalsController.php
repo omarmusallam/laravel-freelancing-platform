@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Freelancer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin;
 use App\Models\Project;
 use App\Models\Proposal;
 use App\Notifications\NewPropsalNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 
 class ProposalsController extends Controller
 {
@@ -39,9 +37,12 @@ class ProposalsController extends Controller
      */
     public function create(Project $project)
     {
+        $shareUrl = route('projects.show', $project);
+
         return view('freelancer.proposals.create', [
             'project' => $project,
             'proposal' => new Proposal(),
+            'shareUrl' => $shareUrl,
             'units' => [
                 'day' => 'Day',
                 'week' => 'Week',
@@ -62,12 +63,17 @@ class ProposalsController extends Controller
         $project = Project::findOrFail($project_id);
         if ($project->status !== 'open') {
             return redirect()->route('freelancer.proposals.index')
-                ->with('error', 'You can not submit propsal to this project');
+                ->with('error', 'You cannot submit a proposal to this project.');
         }
         $user = Auth::guard('web')->user();
-        if ($user->proposedProjects()->find($project->id)) {
+        if ((int) $project->user_id === (int) $user->id) {
+            return redirect()->route('projects.show', $project)
+                ->with('error', 'You cannot submit a proposal to your own project.');
+        }
+
+        if ($user->proposals()->where('project_id', $project->id)->exists()) {
             return redirect()->route('freelancer.proposals.index')
-                ->with('error', 'You already submitted propsal to this project');
+                ->with('error', 'You already submitted a proposal to this project.');
         }
 
         $request->validate([
@@ -77,25 +83,16 @@ class ProposalsController extends Controller
             'duration_unit' => ['required', 'in:day,week,month,year'],
         ]);
         $request->merge([
-            'project_id' => $project_id
+            'project_id' => $project_id,
+            'status' => 'pending',
         ]);
 
         $proposal = $user->proposals()->create($request->all());
 
         $project->user->notify(new NewPropsalNotification($proposal, $user));
 
-        // $admins = Admin::all();
-        // foreach ($admins as $admin) {
-        //     $admin->notify(new NewPropsalNotification($proposal, $user));
-        // }
-        //Notification::send($admins, new NewPropsalNotification($proposal, $user));
-
-        // Notification::route('mail', 'test@example.org')
-        //     ->notify(new NewPropsalNotification($proposal, $user));
-
-
         return redirect()->route('projects.show', $project->id)
-            ->with('success', 'Your propsal has been submitted');
+            ->with('success', 'Your proposal has been submitted.');
     }
 
     /**

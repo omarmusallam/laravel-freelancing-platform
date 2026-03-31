@@ -1,4 +1,4 @@
-<x-front-layout>
+<x-front-layout :title="'Submit Proposal'">
 
     <!-- Titlebar
 ================================================== -->
@@ -8,18 +8,18 @@
                 <div class="col-md-12">
                     <div class="single-page-header-inner">
                         <div class="left-side">
-                            <div class="header-image"><a href="single-company-profile.html"><img src="images/company-logo-03a.png" alt=""></a></div>
+                            <div class="header-image"><a href="{{ route('projects.show', $project) }}"><img src="{{ asset('assets/front/images/company-logo-03a.png') }}" alt=""></a></div>
                             <div class="header-details">
                                 <h3>{{ $project->title }}</h3>
                                 <h5>{{ $project->user->name }}</h5>
                                 <ul>
-                                    <li><a href="single-company-profile.html"><i class="icon-material-outline-business"></i> King</a></li>
+                                    <li><a href="{{ route('projects.show', $project) }}"><i class="icon-material-outline-business"></i> {{ $project->category->parent->name ?? $project->category->name }}</a></li>
                                     <li>
                                         <div class="star-rating" data-rating="4.9"></div>
                                     </li>
-                                    <li><img class="flag" src="images/flags/gb.svg" alt=""> United Kingdom</li>
+                                    <li><img class="flag" src="{{ asset('assets/front/images/flags/ps.svg') }}" alt=""> Remote</li>
                                     <li>
-                                        <div class="verified-badge-with-title">Verified</div>
+                                        <div class="verified-badge-with-title">{{ ucfirst($project->status) }}</div>
                                     </li>
                                 </ul>
                             </div>
@@ -54,74 +54,17 @@
                     <h3 class="margin-bottom-30">Location</h3>
                     <div id="single-job-map-container">
                         <div id="singleListingMap" data-latitude="51.507717" data-longitude="-0.131095" data-map-icon="im im-icon-Hamburger"></div>
-                        <a href="#" id="streetView">Street View</a>
+                        <a href="{{ route('projects.show', $project) }}" id="streetView">Back to Project</a>
                     </div>
                 </div>
 
                 <div class="single-page-section">
-                    <h3 class="margin-bottom-25">Similar Jobs</h3>
-
-                    <!-- Listings Container -->
-                    <div class="listings-container grid-layout">
-
-                        <!-- Job Listing -->
-                        <a href="#" class="job-listing">
-
-                            <!-- Job Listing Details -->
-                            <div class="job-listing-details">
-                                <!-- Logo -->
-                                <div class="job-listing-company-logo">
-                                    <img src="images/company-logo-02.png" alt="">
-                                </div>
-
-                                <!-- Details -->
-                                <div class="job-listing-description">
-                                    <h4 class="job-listing-company">Coffee</h4>
-                                    <h3 class="job-listing-title">Barista and Cashier</h3>
-                                </div>
-                            </div>
-
-                            <!-- Job Listing Footer -->
-                            <div class="job-listing-footer">
-                                <ul>
-                                    <li><i class="icon-material-outline-location-on"></i> San Francisco</li>
-                                    <li><i class="icon-material-outline-business-center"></i> Full Time</li>
-                                    <li><i class="icon-material-outline-account-balance-wallet"></i> $35000-$38000</li>
-                                    <li><i class="icon-material-outline-access-time"></i> 2 days ago</li>
-                                </ul>
-                            </div>
-                        </a>
-
-                        <!-- Job Listing -->
-                        <a href="#" class="job-listing">
-
-                            <!-- Job Listing Details -->
-                            <div class="job-listing-details">
-                                <!-- Logo -->
-                                <div class="job-listing-company-logo">
-                                    <img src="images/company-logo-03.png" alt="">
-                                </div>
-
-                                <!-- Details -->
-                                <div class="job-listing-description">
-                                    <h4 class="job-listing-company">King <span class="verified-badge" title="Verified Employer" data-tippy-placement="top"></span></h4>
-                                    <h3 class="job-listing-title">Restaurant Manager</h3>
-                                </div>
-                            </div>
-
-                            <!-- Job Listing Footer -->
-                            <div class="job-listing-footer">
-                                <ul>
-                                    <li><i class="icon-material-outline-location-on"></i> San Francisco</li>
-                                    <li><i class="icon-material-outline-business-center"></i> Full Time</li>
-                                    <li><i class="icon-material-outline-account-balance-wallet"></i> $35000-$38000</li>
-                                    <li><i class="icon-material-outline-access-time"></i> 2 days ago</li>
-                                </ul>
-                            </div>
-                        </a>
+                    <h3 class="margin-bottom-25">Proposal Tips</h3>
+                    <div class="boxed-list-item">
+                        <div class="item-content">
+                            <p>Keep your proposal focused on the client outcome, confirm the timeline clearly, and explain how your experience matches the project requirements.</p>
+                        </div>
                     </div>
-                    <!-- Listings Container / End -->
-
                 </div>
             </div>
 
@@ -141,7 +84,7 @@
                                     <li>
                                         <i class="icon-material-outline-location-on"></i>
                                         <span>Location</span>
-                                        <h5>London, United Kingdom</h5>
+                                        <h5>Remote / Online</h5>
                                     </li>
                                     <li>
                                         <i class="icon-material-outline-business-center"></i>
@@ -176,7 +119,7 @@
 
                         <!-- Copy URL -->
                         <div class="copy-url">
-                            <input id="copy-url" type="text" value="" class="with-border">
+                            <input id="copy-url" type="text" value="{{ $shareUrl }}" class="with-border">
                             <button class="copy-url-button ripple-effect" data-clipboard-target="#copy-url" title="Copy to Clipboard" data-tippy-placement="top"><i class="icon-material-outline-file-copy"></i></button>
                         </div>
 
@@ -186,10 +129,9 @@
                             <div class="share-buttons-content">
                                 <span>Interesting? <strong>Share It!</strong></span>
                                 <ul class="share-buttons-icons">
-                                    <li><a href="#" data-button-color="#3b5998" title="Share on Facebook" data-tippy-placement="top"><i class="icon-brand-facebook-f"></i></a></li>
-                                    <li><a href="#" data-button-color="#1da1f2" title="Share on Twitter" data-tippy-placement="top"><i class="icon-brand-twitter"></i></a></li>
-                                    <li><a href="#" data-button-color="#dd4b39" title="Share on Google Plus" data-tippy-placement="top"><i class="icon-brand-google-plus-g"></i></a></li>
-                                    <li><a href="#" data-button-color="#0077b5" title="Share on LinkedIn" data-tippy-placement="top"><i class="icon-brand-linkedin-in"></i></a></li>
+                                    <li><a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" data-button-color="#3b5998" title="Share on Facebook" data-tippy-placement="top" target="_blank" rel="noopener"><i class="icon-brand-facebook-f"></i></a></li>
+                                    <li><a href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($project->title) }}" data-button-color="#1da1f2" title="Share on Twitter" data-tippy-placement="top" target="_blank" rel="noopener"><i class="icon-brand-twitter"></i></a></li>
+                                    <li><a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode($shareUrl) }}" data-button-color="#0077b5" title="Share on LinkedIn" data-tippy-placement="top" target="_blank" rel="noopener"><i class="icon-brand-linkedin-in"></i></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -227,7 +169,7 @@
                         @csrf
                         <div class="input-with-icon-left">
                             <i class="icon-material-outline-account-circle"></i>
-                            <x-form.textarea class="input-text with-border" name="description" id="description" placeholder="Proppsal" required="required" />
+                            <x-form.textarea class="input-text with-border" name="description" id="description" placeholder="Proposal summary" required="required" />
                         </div>
 
                         <div class="input-with-icon-left">

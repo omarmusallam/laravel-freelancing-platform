@@ -41,7 +41,7 @@ class Project extends Model
     protected static function booted()
     {
         static::addGlobalScope('active', function (Builder $builder) {
-            $builder->where('status', '=', 'open');
+            $builder->where('projects.status', '=', 'open');
         });
     }
 
@@ -55,19 +55,19 @@ class Project extends Model
         ], $filters);
 
         if ($filters['type']) {
-            $builder->where('type', '=', $filters['type']);
+            $builder->where('projects.type', '=', $filters['type']);
         }
 
         $builder->when($filters['status'], function ($builder, $value) {
-            $builder->where('status', '=', $value);
+            $builder->where('projects.status', '=', $value);
         });
 
         $builder->when($filters['budget_min'], function ($builder, $value) {
-            $builder->where('budget', '>=', $value);
+            $builder->where('projects.budget', '>=', $value);
         });
 
         $builder->when($filters['budget_max'], function ($builder, $value) {
-            $builder->where('budget', '<=', $value);
+            $builder->where('projects.budget', '<=', $value);
         });
     }
 
@@ -78,12 +78,12 @@ class Project extends Model
 
     public function scopeClosed(Builder $builder)
     {
-        $builder->where('status', 'closed');
+        $builder->where('projects.status', 'closed');
     }
 
     public function scopeHourly(Builder $builder)
     {
-        $builder->where('type', 'hourly');
+        $builder->where('projects.type', 'hourly');
     }
 
 

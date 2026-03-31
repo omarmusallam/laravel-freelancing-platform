@@ -15,6 +15,7 @@ class Admin extends User
     protected $fillable = [
         'name',
         'email',
+        'password',
         'super_admin',
         'status',
         'remember_token',

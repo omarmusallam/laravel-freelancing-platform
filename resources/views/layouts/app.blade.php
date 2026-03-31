@@ -53,32 +53,31 @@
                             <div class="dashboard-nav-inner">
 
                                 <ul data-submenu-title="Start">
-                                    <li><a href="#"><i class="icon-material-outline-dashboard"></i>
+                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-dashboard"></i>
                                             Dashboard</a></li>
                                     <li><a href="{{ route('messages') }}"><i
                                                 class="icon-material-outline-question-answer"></i> Messages <span
-                                                class="nav-tag">2</span></a></li>
-                                    <li><a href="#"><i class="icon-material-outline-star-border"></i>
-                                            Bookmarks</a></li>
-                                    <li><a href="#"><i class="icon-material-outline-rate-review"></i> Reviews</a>
+                                                class="nav-tag">Live</span></a></li>
+                                    <li><a href="{{ route('projects.browse') }}"><i class="icon-material-outline-star-border"></i>
+                                            Browse Projects</a></li>
+                                    <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-rate-review"></i> My Proposals</a>
                                     </li>
                                 </ul>
 
                                 <ul data-submenu-title="Organize and Manage">
-                                    <li><a href="#"><i class="icon-material-outline-business-center"></i>
+                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-business-center"></i>
                                             Jobs</a>
                                         <ul>
-                                            <li><a href="#">Manage Jobs <span class="nav-tag">3</span></a></li>
-                                            <li><a href="#">Manage Candidates</a></li>
+                                            <li><a href="{{ route('client.projects.index') }}">Manage Jobs</a></li>
+                                            <li><a href="{{ route('projects.browse') }}">Browse Public Jobs</a></li>
                                             <li><a href="{{ route('client.projects.create') }}">Post a Job</a></li>
                                         </ul>
                                     </li>
-                                    <li><a href="#"><i class="icon-material-outline-assignment"></i> Tasks</a>
+                                    <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-assignment"></i> Freelancer</a>
                                         <ul>
-                                            <li><a href="#">Manage Tasks <span class="nav-tag">2</span></a></li>
-                                            <li><a href="#">Manage Bidders</a></li>
-                                            <li><a href="#">My Active Bids <span class="nav-tag">4</span></a></li>
-                                            <li><a href="#">Post a Task</a></li>
+                                            <li><a href="{{ route('freelancer.proposals.index') }}">My Active Bids</a></li>
+                                            <li><a href="{{ route('freelancer.profile.edit') }}">Profile Settings</a></li>
+                                            <li><a href="{{ route('messages') }}">Conversations</a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -112,14 +111,14 @@
 
                     <!-- Dashboard Headline -->
                     <div class="dashboard-headline">
-                        <h3>Settings</h3>
+                        <h3>{{ $title ?? 'Dashboard' }}</h3>
 
                         <!-- Breadcrumbs -->
                         <nav id="breadcrumbs" class="dark">
                             <ul>
                                 <li><a href="{{ route('home') }}">Home</a></li>
-                                <li><a href="#">Dashboard</a></li>
-                                <li>Settings</li>
+                                <li><a href="{{ route('client.projects.index') }}">Dashboard</a></li>
+                                <li>{{ $title ?? 'Dashboard' }}</li>
                             </ul>
                         </nav>
                     </div>

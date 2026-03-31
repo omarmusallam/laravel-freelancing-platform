@@ -24,27 +24,38 @@
                             </ul>
                         </li>
 
-                        <li><a href="#">{{ trans('Find Work') }}</a>
+                        <li><a href="{{ route('projects.browse') }}">{{ trans('Find Work') }}</a>
                             <ul class="dropdown-nav">
-                                <li><a href="#">@lang('Browse Jobs')</a></li>
-                                <li><a href="{{ route('client.projects.index') }}">@lang('My Jobs')</a></li>
+                                <li><a href="{{ route('projects.browse') }}">@lang('Browse Jobs')</a></li>
+                                @auth
+                                    <li><a href="{{ route('freelancer.proposals.index') }}">@lang('My Proposals')</a></li>
+                                @endauth
                             </ul>
                         </li>
 
-                        <li><a href="#">{{ __('For Employers') }}</a>
+                        <li><a href="{{ auth()->check() ? route('client.projects.index') : route('login') }}">{{ __('For Employers') }}</a>
                             <ul class="dropdown-nav">
-                                <li><a href="#">{{ __('Find a Freelancer') }}</a></li>
-                                <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Freelancer Profile') }}</a>
-                                </li>
-                                <li><a href="{{ route('client.projects.create') }}">{{ __('Post a Job') }}</a></li>
+                                <li><a href="{{ route('projects.browse') }}">{{ __('Browse Projects') }}</a></li>
+                                @auth
+                                    <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Freelancer Profile') }}</a></li>
+                                    <li><a href="{{ route('client.projects.create') }}">{{ __('Post a Job') }}</a></li>
+                                @else
+                                    <li><a href="{{ route('register') }}">{{ __('Create Account') }}</a></li>
+                                    <li><a href="{{ route('login') }}">{{ __('Post a Job') }}</a></li>
+                                @endauth
                             </ul>
                         </li>
 
-                        <li><a href="#">{{ __('Dashboard') }}</a>
+                        <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('login') }}">{{ __('Dashboard') }}</a>
                             <ul class="dropdown-nav">
-                                <li><a href="#">{{ __('Dashboard') }}</a></li>
-                                <li><a href="{{ route('messages') }}">{{ __('Messages') }}</a></li>
-                                <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Settings') }}</a></li>
+                                @auth
+                                    <li><a href="{{ route('client.projects.index') }}">{{ __('My Jobs') }}</a></li>
+                                    <li><a href="{{ route('messages') }}">{{ __('Messages') }}</a></li>
+                                    <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Settings') }}</a></li>
+                                @else
+                                    <li><a href="{{ route('login') }}">{{ __('Login') }}</a></li>
+                                    <li><a href="{{ route('register') }}">{{ __('Register') }}</a></li>
+                                @endauth
                             </ul>
                         </li>
 
@@ -138,9 +149,9 @@
                                 </div>
 
                                 <ul class="user-menu-small-nav">
-                                    <li><a href="#"><i class="icon-material-outline-dashboard"></i>
-                                            {{ __('Dashboard') }}</a></li>
-                                    <li><a href="#"><i class="icon-material-outline-settings"></i>
+                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-dashboard"></i>
+                                            {{ __('My Jobs') }}</a></li>
+                                    <li><a href="{{ route('freelancer.profile.edit') }}"><i class="icon-material-outline-settings"></i>
                                             {{ __('Settings') }}</a></li>
                                     <li><a href="{{ route('logout') }}"
                                             onclick="event.preventDefault(); document.getElementById('logout').submit();"><i

@@ -26,7 +26,7 @@
 
                                         <!-- Details -->
                                         <div class="job-listing-description">
-                                            <h3 class="job-listing-title"><a href="#">{{ $project->title }}</a>
+                                            <h3 class="job-listing-title"><a href="{{ route('projects.show', $project) }}">{{ $project->title }}</a>
                                                 <span
                                                     class="dashboard-status-button yellow">{{ $project->status }}</span>
                                             </h3>
@@ -37,7 +37,7 @@
                                                     <li><i class="icon-material-outline-date-range"></i> Posted on
                                                         {{ $project->created_at }}</li>
                                                     <li><i class="icon-material-outline-bookmarks"></i> Category:
-                                                        {{ $project->category->parent->name }} /
+                                                        {{ $project->category->parent->name ?? 'General' }} /
                                                         {{ $project->category->name }}</li>
                                                     <li><i class="icon-material-outline-bookmarks"></i> Tags:
                                                         @foreach ($project->tags as $tag)
@@ -53,14 +53,17 @@
 
                                 <!-- Buttons -->
                                 <div class="buttons-to-right always-visible">
-                                    <a href="dashboard-manage-candidates.html" class="button ripple-effect"><i
-                                            class="icon-material-outline-supervisor-account"></i> Manage Candidates
-                                        <span class="button-info">3</span></a>
+                                    <a href="{{ route('projects.show', $project) }}" class="button ripple-effect"><i
+                                            class="icon-material-outline-supervisor-account"></i> View Public Page</a>
                                     <a href="{{ route('client.projects.edit', $project->id) }}"
                                         class="button gray ripple-effect ico" title="Edit"
                                         data-tippy-placement="top"><i class="icon-feather-edit"></i></a>
-                                    <a href="#" class="button gray ripple-effect ico" title="Remove"
-                                        data-tippy-placement="top"><i class="icon-feather-trash-2"></i></a>
+                                    <form action="{{ route('client.projects.destroy', $project->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="button gray ripple-effect ico" title="Remove"
+                                            data-tippy-placement="top" onclick="return confirm('Delete this project?')"><i class="icon-feather-trash-2"></i></button>
+                                    </form>
                                 </div>
                             </li>
                         @endforeach

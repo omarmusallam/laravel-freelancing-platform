@@ -23,7 +23,7 @@
 
                                     <!-- Details -->
                                     <div class="job-listing-description">
-                                        <h3 class="job-listing-title"><a href="#">{{ $proposal->project->title }}</a> <span class="dashboard-status-button yellow">{{ $proposal->status }}</span></h3>
+                                        <h3 class="job-listing-title"><a href="{{ route('projects.show', $proposal->project) }}">{{ $proposal->project->title }}</a> <span class="dashboard-status-button yellow">{{ $proposal->status }}</span></h3>
 
                                         <!-- Job Listing Footer -->
                                         <div class="job-listing-footer">
@@ -38,8 +38,7 @@
 
                             <!-- Buttons -->
                             <div class="buttons-to-right always-visible">
-                                <a href="dashboard-manage-candidates.html" class="button ripple-effect"><i class="icon-material-outline-supervisor-account"></i> Manage Candidates <span class="button-info">3</span></a>
-                                <a href="#" class="button gray ripple-effect ico" title="Remove" data-tippy-placement="top"><i class="icon-feather-trash-2"></i></a>
+                                    <a href="{{ route('projects.show', $proposal->project) }}" class="button ripple-effect"><i class="icon-material-outline-supervisor-account"></i> View Project</a>
                             </div>
                         </li>
                         @endforeach

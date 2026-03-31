@@ -10,7 +10,6 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ProjectsController extends Controller
 {
@@ -22,10 +21,8 @@ class ProjectsController extends Controller
     public function index()
     {
         $user = Auth::user();
-        //$projects = Project::with('category')->where('user_id', '=', $user->id)->paginate();
-        $projects = $user->projects()
-            //  ->withoutGlobalScope('active')
-            // ->filter(['status' => 'open', 'budget_min' => 1000, 'budget_max' => 4000])
+
+        $projects = $this->ownedProjects($user)
             ->high()
             ->with('category.parent', 'tags')
             ->paginate();
@@ -60,16 +57,12 @@ class ProjectsController extends Controller
     {
         $user = $request->user();
 
-        // $request->merge([
-        //     'user_id' => $user->id, // Auth::id()
-        // ]);
-        // $project = Project::create($request->all());
-
         $data = $request->except('attachments');
-        $data['attachments'] = $this->uploadAttachments($request);
+        $data['status'] = $data['status'] ?? 'open';
+        $data['attachments'] = $this->uploadAttachments($request) ?? [];
 
         $project = $user->projects()->create($data);
-        $tags = explode(',', $request->input('tags'));
+        $tags = $this->parseTags($request->input('tags'));
         $project->syncTags($tags);
 
         return redirect()
@@ -85,10 +78,9 @@ class ProjectsController extends Controller
      */
     public function show($id)
     {
-        $user = Auth::user();
-
-        // $project = Project::where('user_id' , $user->id)->findOrFail($id);
-        $project = $user->projects()->findOrFail($id);
+        $project = $this->ownedProjects(Auth::user())
+            ->with('category.parent', 'tags')
+            ->findOrFail($id);
 
         return view('client.projects.show', compact('project'));
     }
@@ -101,10 +93,8 @@ class ProjectsController extends Controller
      */
     public function edit($id)
     {
-        $user = Auth::user();
-        $project = $user->projects()->findOrFail($id);
+        $project = $this->ownedProjects(Auth::user())->findOrFail($id);
 
-        // dd($project->attachments);
         return view('client.projects.edit', [
             'project' => $project,
             'types' => Project::types(),
@@ -121,8 +111,7 @@ class ProjectsController extends Controller
      */
     public function update(ProjectRequest $request, $id)
     {
-        $user = Auth::user();
-        $project = $user->projects()->findOrFail($id);
+        $project = $this->ownedProjects(Auth::user())->findOrFail($id);
 
         $data = $request->except('attachments');
         if ($request->attachments) {
@@ -130,12 +119,12 @@ class ProjectsController extends Controller
         }
 
         $project->update($data);
-        $tags = explode(',', $request->input('tags'));
+        $tags = $this->parseTags($request->input('tags'));
         $project->syncTags($tags);
 
         return redirect()
             ->route('client.projects.index')
-            ->with('success', 'Project upated');
+            ->with('success', 'Project updated');
     }
 
     /**
@@ -146,13 +135,13 @@ class ProjectsController extends Controller
      */
     public function destroy($id)
     {
-        $user = Auth::user();
-        $project = $user->projects()->findOrFail($id);
+        $project = $this->ownedProjects(Auth::user())->findOrFail($id);
         $project->delete();
 
-        foreach ($project->attachments as $file) {
+        foreach ((array) ($project->attachments ?? []) as $file) {
             Storage::disk('public')->delete($file);
         }
+
         return redirect()
             ->route('client.projects.index')
             ->with('success', 'Project deleted');
@@ -161,6 +150,11 @@ class ProjectsController extends Controller
     protected function categories()
     {
         return Category::pluck('name', 'id')->toArray();
+    }
+
+    protected function ownedProjects($user)
+    {
+        return $user->projects()->withoutGlobalScope('active');
     }
 
     protected function uploadAttachments(Request $request)
@@ -179,5 +173,18 @@ class ProjectsController extends Controller
             }
         }
         return $attachments;
+    }
+
+    protected function parseTags(?string $tags): array
+    {
+        if (!$tags) {
+            return [];
+        }
+
+        return collect(explode(',', $tags))
+            ->map(fn ($tag) => trim($tag))
+            ->filter()
+            ->values()
+            ->all();
     }
 }

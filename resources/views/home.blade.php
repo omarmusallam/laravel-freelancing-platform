@@ -24,13 +24,13 @@
               <!-- Search Bar -->
               <div class="row">
                   <div class="col-md-12">
-                      <div class="intro-banner-search-form margin-top-95">
+                      <form method="GET" action="{{ route('projects.browse') }}" class="intro-banner-search-form margin-top-95">
 
                           <!-- Search Field -->
                           <div class="intro-search-field with-autocomplete">
                               <label for="autocomplete-input" class="field-title ripple-effect">Where?</label>
                               <div class="input-with-icon">
-                                  <input id="autocomplete-input" type="text" placeholder="Online Job">
+                                  <input id="autocomplete-input" type="text" value="Remote" disabled>
                                   <i class="icon-material-outline-location-on"></i>
                               </div>
                           </div>
@@ -38,24 +38,24 @@
                           <!-- Search Field -->
                           <div class="intro-search-field">
                               <label for="intro-keywords" class="field-title ripple-effect">What you need done?</label>
-                              <input id="intro-keywords" type="text" placeholder="e.g. build me a website">
+                              <input id="intro-keywords" name="q" type="text" placeholder="e.g. build me a website">
                           </div>
 
                           <!-- Search Field -->
                           <div class="intro-search-field">
-                              <select class="selectpicker default" multiple data-selected-text-format="count"
-                                  data-size="7" title="All Categories">
+                              <select name="category" class="selectpicker default" data-size="7" title="All Categories">
+                                  <option value="">All Categories</option>
                                   @foreach ($categories as $category)
-                                      <option>{{ $category->name }}</option>
+                                      <option value="{{ $category->id }}">{{ $category->parent_id ? $category->parent->name . ' / ' . $category->name : $category->name }}</option>
                                   @endforeach
                               </select>
                           </div>
 
                           <!-- Button -->
                           <div class="intro-search-button">
-                              <button class="button ripple-effect" type="button">Search</button>
+                              <button class="button ripple-effect" type="submit">Search</button>
                           </div>
-                      </div>
+                      </form>
                   </div>
               </div>
 
@@ -64,15 +64,15 @@
                   <div class="col-md-12">
                       <ul class="intro-stats margin-top-45 hide-under-992px">
                           <li>
-                              <strong>1,586</strong>
+                              <strong>{{ $stats['projects'] }}</strong>
                               <span>Jobs Posted</span>
                           </li>
                           <li>
-                              <strong>3,543</strong>
+                              <strong>{{ $stats['open_projects'] }}</strong>
                               <span>Tasks Posted</span>
                           </li>
                           <li>
-                              <strong>1,232</strong>
+                              <strong>{{ $stats['freelancers'] }}</strong>
                               <span>Freelancers</span>
                           </li>
                       </ul>
@@ -99,9 +99,10 @@
                   </div>
                   @foreach ($categories as $category)
                       <div class="col-xl-3 col-md-6">
-                          <a href="#" class="photo-box small" data-background-image="images/job-category-01.jpg">
+                          <a href="{{ route('projects.browse', ['category' => $category->id]) }}" class="photo-box small" data-background-image="images/job-category-01.jpg">
                               <div class="photo-box-content">
                                   <h3>{{ $category->name }}</h3>
+                                  <span>{{ $category->parent_id ? $category->parent->name : 'Main Category' }} • {{ $category->projects_count }} projects</span>
                               </div>
                           </a>
                       </div>
@@ -122,14 +123,14 @@
                       <!-- Section Headline -->
                       <div class="section-headline margin-top-0 margin-bottom-35">
                           <h3>Recent Tasks</h3>
-                          <a href="#" class="headline-link">Browse All Tasks</a>
+                          <a href="{{ route('projects.browse') }}" class="headline-link">Browse All Tasks</a>
                       </div>
 
                       <!-- Jobs Container -->
                       <div class="tasks-list-container compact-list margin-top-35">
                           @foreach ($recent_projects as $project)
                               <!-- Task -->
-                              <a href="#" class="task-listing">
+                              <a href="{{ route('projects.show', $project) }}" class="task-listing">
 
                                   <!-- Job Listing Details -->
                                   <div class="task-listing-details">
@@ -139,7 +140,7 @@
                                           <h3 class="task-listing-title">{{ $project->title }}</h3>
                                           <ul class="task-icons">
                                               <li><i class="icon-material-outline-location-on"></i>
-                                                  {{ $project->category->name }}</li>
+                                                  {{ $project->category->parent->name ?? $project->category->name }}</li>
                                               <li><i class="icon-material-outline-access-time"></i>
                                                   {{ $project->created_at->diffForHumans() }}</li>
                                           </ul>
@@ -156,7 +157,7 @@
                                       <div class="task-listing-bid-inner">
                                           <div class="task-offers">
                                               <strong>$ {{ $project->budget }}</strong>
-                                              <span>{{ $project->type }}</span>
+                                              <span>{{ ucfirst($project->type) }}</span>
                                           </div>
                                           <span class="button button-sliding-icon ripple-effect">Bid Now <i
                                                   class="icon-material-outline-arrow-right-alt"></i></span>
@@ -357,7 +358,7 @@
                           <div class="single-counter">
                               <i class="icon-line-awesome-suitcase"></i>
                               <div class="counter-inner">
-                                  <h3><span>1,586</span></h3>
+                                  <h3><span>{{ $stats['projects'] }}</span></h3>
                                   <span class="counter-title">Jobs Posted</span>
                               </div>
                           </div>
@@ -366,7 +367,7 @@
                           <div class="single-counter">
                               <i class="icon-line-awesome-legal"></i>
                               <div class="counter-inner">
-                                  <h3><span>3,543</span></h3>
+                                  <h3><span>{{ $stats['open_projects'] }}</span></h3>
                                   <span class="counter-title">Tasks Posted</span>
                               </div>
                           </div>
@@ -375,7 +376,7 @@
                           <div class="single-counter">
                               <i class="icon-line-awesome-user"></i>
                               <div class="counter-inner">
-                                  <h3><span>2,413</span></h3>
+                                  <h3><span>{{ $stats['freelancers'] }}</span></h3>
                                   <span class="counter-title">Active Members</span>
                               </div>
                           </div>

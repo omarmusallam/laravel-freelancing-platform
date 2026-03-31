@@ -34,7 +34,7 @@
                     <!-- Welcome Text -->
                     <div class="welcome-text">
                         <h3>{{ __("We're glad to see you again!") }}</h3>
-                        @if (Route::has('register'))
+                        @if (($routePrefix ?? '') === '' && Route::has('register'))
                             <span>{{ __("Don't have an account?") }} <a href="{{ route('register') }}">Sign
                                     Up!</a></span>
                         @endif
@@ -47,7 +47,7 @@
                     <x-auth-validation-errors style="color: rgb(194, 47, 47)" class="mb-4" :errors="$errors" />
 
                     <!-- Form -->
-                    <form method="post" action="{{ route('login') }}" id="login-form">
+                    <form method="post" action="{{ route(($routePrefix ?? '') . 'login') }}" id="login-form">
                         @csrf
                         <div class="input-with-icon-left">
                             <i class="icon-material-baseline-mail-outline"></i>
@@ -60,7 +60,7 @@
                             <input type="password" class="input-text with-border" name="password" id="password"
                                 placeholder="{{ __('Password') }}" required />
                         </div>
-                        @if (Route::has('password.request'))
+                        @if (($routePrefix ?? '') === '' && Route::has('password.request'))
                             <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
                         @endif
                     </form>

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\MessageCreated;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class MessagesController extends Controller
 {
@@ -24,9 +24,44 @@ class MessagesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view('messages');
+        $user = $request->user();
+
+        $contacts = User::query()
+            ->whereKeyNot($user->id)
+            ->orderBy('name')
+            ->get();
+
+        $recipientId = $request->input('recipient_id');
+        $recipientId = is_numeric($recipientId) ? (int) $recipientId : null;
+
+        $selectedContact = $contacts->firstWhere('id', $recipientId) ?: $contacts->first();
+
+        $messages = collect();
+        if ($selectedContact) {
+            $messages = Message::query()
+                ->with(['sender', 'recipient'])
+                ->where(function ($query) use ($user, $selectedContact) {
+                    $query->where('sender_id', $user->id)
+                        ->where('recipient_id', $selectedContact->id);
+                })
+                ->orWhere(function ($query) use ($user, $selectedContact) {
+                    $query->where('sender_id', $selectedContact->id)
+                        ->where('recipient_id', $user->id);
+                })
+                ->latest()
+                ->take(50)
+                ->get()
+                ->reverse()
+                ->values();
+        }
+
+        return view('messages-page', [
+            'contacts' => $contacts,
+            'selectedContact' => $selectedContact,
+            'messages' => $messages,
+        ]);
     }
 
     /**
@@ -39,16 +74,20 @@ class MessagesController extends Controller
     {
         $request->validate([
             'message' => ['required', 'string'],
-            'recipient_id' => ['required', 'int', 'exists:users,id']
+            'recipient_id' => ['required', 'int', 'exists:users,id', 'different:' . $request->user()->id]
         ]);
 
         $message = Message::create([
-            'sender_id' => Auth::id(),
+            'sender_id' => $request->user()->id,
             'recipient_id' => $request->post('recipient_id'),
             'message' => $request->post('message'),
         ]);
 
         event(new MessageCreated($message));
+
+        return redirect()
+            ->route('messages', ['recipient_id' => $request->post('recipient_id')])
+            ->with('success', 'Message sent successfully.');
     }
 
     /**

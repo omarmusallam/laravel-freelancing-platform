@@ -65,25 +65,25 @@
                                         <div class="footer-row-inner">
                                             <ul class="footer-social-links">
                                                 <li>
-                                                    <a href="#" title="Facebook" data-tippy-placement="bottom"
+                                                    <a href="{{ route('home') }}" title="Home" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-facebook-f"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="#" title="Twitter" data-tippy-placement="bottom"
+                                                    <a href="{{ route('projects.browse') }}" title="Projects" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-twitter"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="#" title="Google Plus" data-tippy-placement="bottom"
+                                                    <a href="{{ auth()->check() ? route('client.projects.create') : route('register') }}" title="Post a Job" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-google-plus-g"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="#" title="LinkedIn" data-tippy-placement="bottom"
+                                                    <a href="{{ auth()->check() ? route('messages') : route('login') }}" title="Messages" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-linkedin-in"></i>
                                                     </a>
@@ -112,10 +112,10 @@
                             <div class="footer-links">
                                 <h3>For Candidates</h3>
                                 <ul>
-                                    <li><a href="#"><span>Browse Jobs</span></a></li>
-                                    <li><a href="#"><span>Add Resume</span></a></li>
-                                    <li><a href="#"><span>Job Alerts</span></a></li>
-                                    <li><a href="#"><span>My Bookmarks</span></a></li>
+                                    <li><a href="{{ route('projects.browse') }}"><span>Browse Jobs</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('register') }}"><span>Freelancer Profile</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('freelancer.proposals.index') : route('login') }}"><span>My Proposals</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('messages') : route('login') }}"><span>Messages</span></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -125,10 +125,10 @@
                             <div class="footer-links">
                                 <h3>For Employers</h3>
                                 <ul>
-                                    <li><a href="#"><span>Browse Candidates</span></a></li>
-                                    <li><a href="#"><span>Post a Job</span></a></li>
-                                    <li><a href="#"><span>Post a Task</span></a></li>
-                                    <li><a href="#"><span>Plans & Pricing</span></a></li>
+                                    <li><a href="{{ route('projects.browse') }}"><span>Browse Projects</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('client.projects.create') : route('login') }}"><span>Post a Job</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('client.projects.index') : route('login') }}"><span>Manage Jobs</span></a></li>
+                                    <li><a href="{{ route('register') }}"><span>Create Account</span></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -138,9 +138,9 @@
                             <div class="footer-links">
                                 <h3>Helpful Links</h3>
                                 <ul>
-                                    <li><a href="#"><span>Contact</span></a></li>
-                                    <li><a href="#"><span>Privacy Policy</span></a></li>
-                                    <li><a href="#"><span>Terms of Use</span></a></li>
+                                    <li><a href="{{ route('home') }}"><span>Home</span></a></li>
+                                    <li><a href="{{ route('projects.browse') }}"><span>Browse Projects</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('messages') : route('login') }}"><span>Messages</span></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -150,8 +150,8 @@
                             <div class="footer-links">
                                 <h3>Account</h3>
                                 <ul>
-                                    <li><a href="#"><span>Log In</span></a></li>
-                                    <li><a href="#"><span>My Account</span></a></li>
+                                    <li><a href="{{ route('login') }}"><span>Log In</span></a></li>
+                                    <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('register') }}"><span>My Account</span></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -160,8 +160,8 @@
                         <div class="col-xl-4 col-lg-4 col-md-12">
                             <h3><i class="icon-feather-mail"></i> Sign Up For a Newsletter</h3>
                             <p>Weekly breaking news, analysis and cutting edge advices on job searching.</p>
-                            <form action="#" method="get" class="newsletter">
-                                <input type="text" name="fname" placeholder="Enter your email address">
+                            <form action="{{ route('register') }}" method="get" class="newsletter">
+                                <input type="text" name="fname" placeholder="Create your account to explore more" readonly>
                                 <button type="submit"><i class="icon-feather-arrow-right"></i></button>
                             </form>
                         </div>

@@ -22,6 +22,8 @@ class AdminFactory extends Factory
             'name' => $this->faker->name('male'),
             'email' => $this->faker->safeEmail,
             'password' => Hash::make('password123'),
+            'status' => 'active',
+            'super_admin' => false,
             'remember_token' => Str::random(16),
         ];
     }
