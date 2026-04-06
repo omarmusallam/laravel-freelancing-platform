@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Services\Payments\Thawani;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class PaymentsCallbackController extends Controller
@@ -23,8 +23,12 @@ class PaymentsCallbackController extends Controller
             abort(404);
         }
 
-        if ($payment->status !== 'success') {
-            return 'Success';
+        if ($payment->status === 'success') {
+            Session::forget(['payment_id', 'session_id']);
+
+            return redirect()
+                ->route('home')
+                ->with('success', 'Payment already confirmed successfully.');
         }
 
         $client = new Thawani(
@@ -35,21 +39,27 @@ class PaymentsCallbackController extends Controller
 
         try {
             $response = $client->getCheckoutSession($session_id);
-            if ($response['data']['payment_status'] == 'paid') {
+            if (($response['data']['payment_status'] ?? null) === 'paid') {
                 $payment->status = 'success';
                 $payment->data = $response;
                 $payment->save();
 
                 Session::forget(['payment_id', 'session_id']);
 
-                dd('Success!');
+                return redirect()
+                    ->route('home')
+                    ->with('success', 'Payment completed successfully.');
             }
-
         } catch (Exception $e) {
-            dd($e->getMessage());
+            Log::error('Payment success callback failed.', [
+                'payment_id' => $payment->id,
+                'message' => $e->getMessage(),
+            ]);
         }
 
-
+        return redirect()
+            ->route('home')
+            ->with('warning', 'Payment is still pending confirmation.');
     }
 
     public function cancel()
@@ -68,6 +78,10 @@ class PaymentsCallbackController extends Controller
         $payment->status = 'failed';
         $payment->save();
 
-        dd('Failed!');
+        Session::forget(['payment_id', 'session_id']);
+
+        return redirect()
+            ->route('home')
+            ->with('error', 'Payment was cancelled or failed.');
     }
 }

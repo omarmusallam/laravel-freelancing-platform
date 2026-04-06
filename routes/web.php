@@ -54,6 +54,8 @@ require __DIR__ . '/freelancer.php';
 require __DIR__ . '/client.php';
 require __DIR__ . '/auth.php';
 
-Route::get('payments/create', [PaymentsController::class, 'create'])->name('payments.create');
-Route::get('/payments/callback/success', [PaymentsCallbackController::class, 'success'])->name('payments.success');
-Route::get('/payments/callback/cancel', [PaymentsCallbackController::class, 'cancel'])->name('payments.cancel');
+Route::middleware('auth:web')->group(function () {
+    Route::get('payments/create', [PaymentsController::class, 'create'])->name('payments.create');
+    Route::get('/payments/callback/success', [PaymentsCallbackController::class, 'success'])->name('payments.success');
+    Route::get('/payments/callback/cancel', [PaymentsCallbackController::class, 'cancel'])->name('payments.cancel');
+});

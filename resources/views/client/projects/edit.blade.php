@@ -1,4 +1,5 @@
 <x-app-layout>
+    @php($pageMode = 'edit')
     <form action="{{ route('client.projects.update', $project->id) }}" method="post" enctype="multipart/form-data">
         @csrf
         @method('put')

@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Component;
 
@@ -18,13 +19,25 @@ class NotificationMenu extends Component
     public function __construct($count = 10)
     {
         $user = Auth::user();
-        $this->notifications = $user->notifications()
-            ->take($count)
-            ->get();
+        $this->notifications = collect();
+        $this->new = 0;
 
-        // $user->unreadNotifications = return collection
-        // $user->unreadNotifications() = return query builder
-        $this->new = $user->unreadNotifications()->count();
+        if (!$user || !$user->exists) {
+            return;
+        }
+
+        try {
+            $this->notifications = $user->notifications()
+                ->take($count)
+                ->get();
+
+            // $user->unreadNotifications = return collection
+            // $user->unreadNotifications() = return query builder
+            $this->new = $user->unreadNotifications()->count();
+        } catch (QueryException $e) {
+            $this->notifications = collect();
+            $this->new = 0;
+        }
     }
 
     /**

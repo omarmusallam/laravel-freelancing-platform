@@ -4,16 +4,34 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proposal;
+use App\Services\ProposalWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ProposalsController extends Controller
 {
+    public function __construct(protected ProposalWorkflowService $workflow)
+    {
+    }
+
     public function index(Request $request)
     {
         $status = $request->input('status');
+        $query = trim((string) $request->input('q', ''));
 
         $proposals = Proposal::with(['project', 'freelancer'])
+            ->when($query !== '', function ($builder) use ($query) {
+                $builder->where(function ($proposalQuery) use ($query) {
+                    $proposalQuery->where('description', 'like', '%' . $query . '%')
+                        ->orWhereHas('freelancer', function ($userQuery) use ($query) {
+                            $userQuery->where('name', 'like', '%' . $query . '%')
+                                ->orWhere('email', 'like', '%' . $query . '%');
+                        })
+                        ->orWhereHas('project', function ($projectQuery) use ($query) {
+                            $projectQuery->where('title', 'like', '%' . $query . '%');
+                        });
+                });
+            })
             ->when(in_array($status, ['pending', 'accepted', 'declined'], true), function ($builder) use ($status) {
                 $builder->where('status', $status);
             })
@@ -21,9 +39,18 @@ class ProposalsController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $stats = [
+            'pending' => Proposal::where('status', 'pending')->count(),
+            'accepted' => Proposal::where('status', 'accepted')->count(),
+            'declined' => Proposal::where('status', 'declined')->count(),
+            'value' => Proposal::sum('cost'),
+        ];
+
         return view('dashboard.proposals.index', [
             'proposals' => $proposals,
             'status' => $status,
+            'query' => $query,
+            'stats' => $stats,
         ]);
     }
 
@@ -44,7 +71,7 @@ class ProposalsController extends Controller
             'duration_unit' => ['required', Rule::in(['day', 'week', 'month', 'year'])],
         ]);
 
-        $proposal->update($data);
+        $this->workflow->applyDecision($proposal, $data);
 
         return redirect()
             ->route('dashboard.proposals.show', $proposal)
@@ -59,12 +86,27 @@ class ProposalsController extends Controller
             'action' => ['required', Rule::in(['pending', 'accepted', 'declined', 'delete'])],
         ]);
 
-        $proposals = Proposal::whereIn('id', $data['proposal_ids']);
-
         if ($data['action'] === 'delete') {
-            $proposals->delete();
+            Proposal::whereIn('id', $data['proposal_ids'])
+                ->get()
+                ->each(function (Proposal $proposal) {
+                    $proposal->contract()->delete();
+                    $proposal->delete();
+                });
         } else {
-            $proposals->update(['status' => $data['action']]);
+            Proposal::whereIn('id', $data['proposal_ids'])
+                ->get()
+                ->each(function (Proposal $proposal) use ($data) {
+                    $payload = [
+                        'description' => $proposal->description,
+                        'cost' => $proposal->cost,
+                        'duration' => $proposal->duration,
+                        'duration_unit' => $proposal->duration_unit,
+                        'status' => $data['action'],
+                    ];
+
+                    $this->workflow->applyDecision($proposal, $payload);
+                });
         }
 
         return redirect()
@@ -74,6 +116,7 @@ class ProposalsController extends Controller
 
     public function destroy(Proposal $proposal)
     {
+        $proposal->contract()->delete();
         $proposal->delete();
 
         return redirect()

@@ -6,22 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Rules\FilterRule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CategoriesController extends Controller
 {
 
     protected $rules = [
-        // 'name' => 'required|string|max:20|min:4',
         'name' => ['required', 'string', 'between:2,30'],
         'parent_id' => ['nullable', 'int', 'exists:categories,id'],
         'desc' => ['nullable', 'string'],
-        'art_file' => ['nullable', 'image']
+        'art_path' => ['nullable', 'string', 'max:255'],
+        'slug' => ['nullable', 'string', 'max:255'],
     ];
 
     protected $messages = [
@@ -67,23 +63,10 @@ class CategoriesController extends Controller
 
     public function store(Request $request)
     {
-        $clean = $request->validate($this->rules(), $this->messages);
-        /*
-        // Stor part 1 
-        $category = new Category();
-        $category->name = $request->input('name');
-        $category->desc = $request->input('desc');
-        $category->parent_id = $request->input('parent_id');
-        $category->slug = Str::slug($category->name);
-        $category->save();
-        */
+        $data = $request->validate($this->rules(), $this->messages);
+        $data['slug'] = Str::slug(($data['slug'] ?? '') ?: $data['name']);
 
-        // Stor part 2 
-        $data = $request->all();
-        if (!$data['slug']) {
-            $data['slug'] = Str::slug($data['name']);
-        }
-        $category = Category::create($data);
+        Category::create($data);
 
         return redirect(route('dashboard.categories.index'))
             ->with('success', 'Category Created');
@@ -99,17 +82,17 @@ class CategoriesController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        // $category = Category::findOrFail($id);
+        $data = $request->validate($this->rules($category), $this->messages);
+        $data['slug'] = Str::slug(($data['slug'] ?? '') ?: $data['name']);
 
-        $clean = $request->validate($this->rules(), $this->messages);
+        if (($data['parent_id'] ?? null) === $category->id) {
+            return redirect()
+                ->back()
+                ->withErrors(['parent_id' => 'A category cannot be its own parent.'])
+                ->withInput();
+        }
 
-        // $category->name = $request->input('name');
-        // $category->desc = $request->input('desc');
-        // $category->parent_id = $request->input('parent_id');
-        // $category->slug = Str::slug($category->name);
-        // $category->save();
-
-        $category->update($request->all());
+        $category->update($data);
         return redirect()
             ->route('dashboard.categories.index')
             ->with('success', 'Category Updated');
@@ -158,18 +141,11 @@ class CategoriesController extends Controller
             ->with('success', 'Category deleted for ever!');
     }
 
-    protected function rules()
+    protected function rules(?Category $category = null)
     {
         $rules = $this->rules;
+        $rules['slug'][] = Rule::unique('categories', 'slug')->ignore(optional($category)->id);
 
-        // part 1 Custom Validat
-        // $rules['name'][] = function($attribute , $value , $fail){
-        //     if($value == 'god'){
-        //         $fail('This is word not allowed');
-        //     } 
-        // }; 
-
-        // part 2 Custom Validat
         $rules['name'][] = new FilterRule();
         return $rules;
     }

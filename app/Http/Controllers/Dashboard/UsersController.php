@@ -13,21 +13,41 @@ class UsersController extends Controller
     public function index(Request $request)
     {
         $query = trim((string) $request->input('q', ''));
+        $role = trim((string) $request->input('role', ''));
 
-        $users = User::with(['roles', 'projects', 'proposals'])
+        $users = User::with('roles')
+            ->withCount(['projects', 'proposals', 'contracts'])
             ->when($query !== '', function ($builder) use ($query) {
                 $builder->where(function ($search) use ($query) {
                     $search->where('name', 'like', '%' . $query . '%')
                         ->orWhere('email', 'like', '%' . $query . '%');
                 });
             })
+            ->when($role !== '', function ($builder) use ($role) {
+                $builder->whereHas('roles', function ($roleQuery) use ($role) {
+                    $roleQuery->where('name', $role);
+                });
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
+        $stats = [
+            'users' => User::count(),
+            'clients' => User::whereHas('roles', function ($query) {
+                $query->where('name', 'client');
+            })->count(),
+            'freelancers' => User::whereHas('roles', function ($query) {
+                $query->where('name', 'freelancer');
+            })->count(),
+            'with_contracts' => User::has('contracts')->count(),
+        ];
+
         return view('dashboard.users.index', [
             'users' => $users,
             'query' => $query,
+            'role' => $role,
+            'stats' => $stats,
         ]);
     }
 

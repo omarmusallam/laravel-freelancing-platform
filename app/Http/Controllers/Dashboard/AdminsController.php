@@ -69,6 +69,18 @@ class AdminsController extends Controller
 
         $data['super_admin'] = (bool) ($data['super_admin'] ?? false);
 
+        if ($admin->id === auth('admin')->id() && !$data['super_admin']) {
+            return redirect()
+                ->route('dashboard.admins.index')
+                ->with('error', 'You cannot remove super admin privileges from your current session.');
+        }
+
+        if ($admin->super_admin && !$data['super_admin'] && Admin::where('super_admin', true)->count() <= 1) {
+            return redirect()
+                ->route('dashboard.admins.index')
+                ->with('error', 'At least one super admin account must remain active.');
+        }
+
         $admin->update($data);
 
         return redirect()
@@ -82,6 +94,12 @@ class AdminsController extends Controller
             return redirect()
                 ->route('dashboard.admins.index')
                 ->with('error', 'You cannot delete your current admin session.');
+        }
+
+        if ($admin->super_admin && Admin::where('super_admin', true)->count() <= 1) {
+            return redirect()
+                ->route('dashboard.admins.index')
+                ->with('error', 'At least one super admin account must remain active.');
         }
 
         $admin->delete();

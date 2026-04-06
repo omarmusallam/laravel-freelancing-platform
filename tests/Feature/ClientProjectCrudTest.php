@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Project;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,6 +16,11 @@ class ClientProjectCrudTest extends TestCase
     public function test_client_can_create_view_update_and_delete_a_project()
     {
         $user = User::factory()->create();
+        $clientRole = Role::create([
+            'name' => 'client',
+            'abilities' => ['projects.create'],
+        ]);
+        $user->roles()->attach($clientRole);
         $category = Category::create([
             'name' => 'Web Development',
             'slug' => 'web-development',

@@ -28,13 +28,31 @@ class MessagesController extends Controller
     {
         $user = $request->user();
 
+        $recipientId = $request->input('recipient_id');
+        $recipientId = is_numeric($recipientId) ? (int) $recipientId : null;
+
+        $contactIds = Message::query()
+            ->select('sender_id as contact_id')
+            ->where('recipient_id', $user->id)
+            ->union(
+                Message::query()
+                    ->select('recipient_id as contact_id')
+                    ->where('sender_id', $user->id)
+            )
+            ->pluck('contact_id')
+            ->filter(fn ($id) => (int) $id !== (int) $user->id)
+            ->unique()
+            ->values();
+
+        if ($recipientId && !$contactIds->contains($recipientId)) {
+            $contactIds->push($recipientId);
+        }
+
         $contacts = User::query()
+            ->whereIn('id', $contactIds->all())
             ->whereKeyNot($user->id)
             ->orderBy('name')
             ->get();
-
-        $recipientId = $request->input('recipient_id');
-        $recipientId = is_numeric($recipientId) ? (int) $recipientId : null;
 
         $selectedContact = $contacts->firstWhere('id', $recipientId) ?: $contacts->first();
 

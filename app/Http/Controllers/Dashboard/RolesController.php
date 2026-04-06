@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RolesController extends Controller
 {
@@ -40,12 +41,13 @@ class RolesController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'abilities' => 'required|array',
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'abilities' => ['required', 'array'],
+            'abilities.*' => ['string', Rule::in(array_keys(config('abilities')))],
         ]);
 
-        $role = Role::create($request->all());
+        $role = Role::create($data);
 
         return redirect()->route('dashboard.roles.index')
             ->with('success', __('Role :name created!', [
@@ -86,12 +88,13 @@ class RolesController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        $request->validate([
-            'name' => 'required',
-            'abilities' => 'required|array',
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('roles', 'name')->ignore($role->id)],
+            'abilities' => ['required', 'array'],
+            'abilities.*' => ['string', Rule::in(array_keys(config('abilities')))],
         ]);
 
-        $role->update($request->all());
+        $role->update($data);
 
         return redirect()->route('dashboard.roles.index')
             ->with('success', __('Role :name updated!', [

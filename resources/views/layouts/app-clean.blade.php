@@ -2,14 +2,26 @@
 <html lang="en">
 
 <head>
-    <title>{{ config('app.name') }}</title>
+    <title>{{ $siteSettings->site_name }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="{{ $siteSettings->meta_description }}">
+    <meta name="keywords" content="{{ $siteSettings->meta_keywords }}">
+    @if ($siteSettings->faviconUrl())
+        <link rel="icon" type="image/png" href="{{ $siteSettings->faviconUrl() }}">
+    @endif
     <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front/css/colors/blue.css') }}">
 </head>
 
 <body class="gray">
+    @php
+        $currentUser = auth()->user();
+        $userRoles = ($currentUser && method_exists($currentUser, 'roles')) ? $currentUser->roles : collect();
+        $isFreelancer = $userRoles->contains('name', 'freelancer');
+        $isClient = $userRoles->contains('name', 'client');
+        $dashboardRoute = $isFreelancer ? route('freelancer.profile.edit') : route('client.projects.index');
+    @endphp
     <div id="wrapper">
         <x-front-header />
         <div class="clearfix"></div>
@@ -30,31 +42,39 @@
                         <div class="dashboard-nav">
                             <div class="dashboard-nav-inner">
                                 <ul data-submenu-title="Start">
-                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-dashboard"></i> Dashboard</a></li>
+                                    <li><a href="{{ $dashboardRoute }}"><i class="icon-material-outline-dashboard"></i> Dashboard</a></li>
                                     <li><a href="{{ route('messages') }}"><i class="icon-material-outline-question-answer"></i> Messages <span class="nav-tag">Live</span></a></li>
                                     <li><a href="{{ route('projects.browse') }}"><i class="icon-material-outline-star-border"></i> Browse Projects</a></li>
-                                    <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-rate-review"></i> My Proposals</a></li>
+                                    @if ($isFreelancer)
+                                        <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-rate-review"></i> My Proposals</a></li>
+                                    @endif
                                 </ul>
 
                                 <ul data-submenu-title="Organize and Manage">
-                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-business-center"></i> Jobs</a>
-                                        <ul>
-                                            <li><a href="{{ route('client.projects.index') }}">Manage Jobs</a></li>
-                                            <li><a href="{{ route('projects.browse') }}">Browse Public Jobs</a></li>
-                                            <li><a href="{{ route('client.projects.create') }}">Post a Job</a></li>
-                                        </ul>
-                                    </li>
-                                    <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-assignment"></i> Freelancer</a>
-                                        <ul>
-                                            <li><a href="{{ route('freelancer.proposals.index') }}">My Active Bids</a></li>
-                                            <li><a href="{{ route('freelancer.profile.edit') }}">Profile Settings</a></li>
-                                            <li><a href="{{ route('messages') }}">Conversations</a></li>
-                                        </ul>
-                                    </li>
+                                    @if ($isClient)
+                                        <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-business-center"></i> Jobs</a>
+                                            <ul>
+                                                <li><a href="{{ route('client.projects.index') }}">Manage Jobs</a></li>
+                                                <li><a href="{{ route('projects.browse') }}">Browse Public Jobs</a></li>
+                                                <li><a href="{{ route('client.projects.create') }}">Post a Job</a></li>
+                                            </ul>
+                                        </li>
+                                    @endif
+                                    @if ($isFreelancer)
+                                        <li><a href="{{ route('freelancer.proposals.index') }}"><i class="icon-material-outline-assignment"></i> Freelancer</a>
+                                            <ul>
+                                                <li><a href="{{ route('freelancer.proposals.index') }}">My Active Bids</a></li>
+                                                <li><a href="{{ route('freelancer.profile.edit') }}">Profile Settings</a></li>
+                                                <li><a href="{{ route('messages') }}">Conversations</a></li>
+                                            </ul>
+                                        </li>
+                                    @endif
                                 </ul>
 
                                 <ul data-submenu-title="Account">
-                                    <li class="active"><a href="{{ route('freelancer.profile.edit') }}"><i class="icon-material-outline-settings"></i> Settings</a></li>
+                                    @if ($isFreelancer)
+                                        <li class="active"><a href="{{ route('freelancer.profile.edit') }}"><i class="icon-material-outline-settings"></i> Settings</a></li>
+                                    @endif
                                     <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout').submit();"><i class="icon-material-outline-power-settings-new"></i> Logout</a></li>
                                 </ul>
                                 <form action="{{ route('logout') }}" method="post" style="display: none;" id="logout">
@@ -73,7 +93,7 @@
                         <nav id="breadcrumbs" class="dark">
                             <ul>
                                 <li><a href="{{ route('home') }}">Home</a></li>
-                                <li><a href="{{ route('client.projects.index') }}">Dashboard</a></li>
+                                <li><a href="{{ $dashboardRoute }}">Dashboard</a></li>
                                 <li>{{ $title ?? 'Dashboard' }}</li>
                             </ul>
                         </nav>
@@ -84,12 +104,17 @@
                     <div class="dashboard-footer-spacer"></div>
                     <div class="small-footer margin-top-15">
                         <div class="small-footer-copyrights">
-                            &copy; {{ now()->year }} <strong>{{ config('app.name') }}</strong>. All Rights Reserved.
+                            &copy; {{ now()->year }} <strong>{{ $siteSettings->site_name }}</strong>. {{ $siteSettings->copyright_text ?: 'All Rights Reserved.' }}
+                        </div>
+                        <div style="margin-top: 8px; color: #888;">
+                            {{ $siteSettings->contact_email }} @if($siteSettings->contact_phone) | {{ $siteSettings->contact_phone }} @endif
                         </div>
                         <ul class="footer-social-links">
                             <li><a href="{{ route('home') }}" title="Home" data-tippy-placement="top"><i class="icon-brand-facebook-f"></i></a></li>
                             <li><a href="{{ route('projects.browse') }}" title="Projects" data-tippy-placement="top"><i class="icon-brand-twitter"></i></a></li>
-                            <li><a href="{{ route('client.projects.create') }}" title="Post a Job" data-tippy-placement="top"><i class="icon-brand-google-plus-g"></i></a></li>
+                            @if ($isClient)
+                                <li><a href="{{ route('client.projects.create') }}" title="Post a Job" data-tippy-placement="top"><i class="icon-brand-google-plus-g"></i></a></li>
+                            @endif
                             <li><a href="{{ route('messages') }}" title="Messages" data-tippy-placement="top"><i class="icon-brand-linkedin-in"></i></a></li>
                         </ul>
                         <div class="clearfix"></div>

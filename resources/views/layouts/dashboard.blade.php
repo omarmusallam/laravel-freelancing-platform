@@ -8,7 +8,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name') }}</title>
+    <title>{{ $siteSettings->site_name }} | Admin</title>
+    @if ($siteSettings->faviconUrl())
+        <link rel="icon" type="image/png" href="{{ $siteSettings->faviconUrl() }}">
+    @endif
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -18,16 +21,61 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('assets/dashboard/dist/css/adminlte.min.css') }}">
     <style>
+        body {
+            background: #f4f7fb;
+        }
+        .main-header.navbar {
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+        .content-wrapper {
+            background:
+                radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 28%),
+                linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+        }
+        .content-header h1 {
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
         .content-wrapper .card {
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
             border: 0;
+            border-radius: 1rem;
         }
         .small-box {
             border-radius: 0.75rem;
             overflow: hidden;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
         }
         .nav-sidebar .nav-link p {
             white-space: normal;
+        }
+        .sidebar {
+            padding-top: 0.5rem;
+        }
+        .sidebar-section-label {
+            color: rgba(255,255,255,.45);
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            margin: 1rem 1rem 0.5rem;
+            text-transform: uppercase;
+        }
+        .admin-shell-chip {
+            align-items: center;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            border-radius: 999px;
+            color: #1d4ed8;
+            display: inline-flex;
+            font-size: 0.8rem;
+            font-weight: 600;
+            gap: 0.45rem;
+            padding: 0.4rem 0.75rem;
+        }
+        .dashboard-surface-muted {
+            color: #64748b;
         }
     </style>
 </head>
@@ -89,7 +137,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <a href="{{ route('home') }}" class="brand-link">
                 <img src="{{ asset('assets/dashboard/dist/img/AdminLTELogo.png') }}" alt="Logo"
                     class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">{{ config('app.name') }}</span>
+                <span class="brand-text font-weight-light">{{ $siteSettings->site_name }}</span>
             </a>
 
             <!-- Sidebar -->
@@ -101,6 +149,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </div>
                     <div class="info">
                         <div style="color: rgba(255,255,255,.8)">{{ auth('admin')->user()->name }}</div><br>
+                        <div style="color: rgba(255,255,255,.5); font-size: 0.8rem; margin-top: -0.45rem;">
+                            {{ auth('admin')->user()->super_admin ? 'Super Admin' : 'Operations Admin' }}
+                        </div>
                         <form action="{{ route('admin.logout') }}" method="POST">
                             @csrf
                             <button class="btn btn-sm btn-outline-danger" type="submit">Logout</button>
@@ -123,6 +174,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </div>
 
                 <!-- Sidebar Menu -->
+                <span class="sidebar-section-label">Control Center</span>
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
@@ -135,13 +187,15 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('dashboard.admins.index') }}"
-                                class="nav-link {{ request()->is('admin/dashboard/admins*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-user-shield"></i>
-                                <p>Admins</p>
-                            </a>
-                        </li>
+                        @if (auth('admin')->user()->super_admin)
+                            <li class="nav-item">
+                                <a href="{{ route('dashboard.admins.index') }}"
+                                    class="nav-link {{ request()->is('admin/dashboard/admins*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-user-shield"></i>
+                                    <p>Admins</p>
+                                </a>
+                            </li>
+                        @endif
                         <li class="nav-item">
                             <a href="{{ route('dashboard.users.index') }}"
                                 class="nav-link {{ request()->is('admin/dashboard/users*') ? 'active' : '' }}">
@@ -163,8 +217,37 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <p>Proposals</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.contracts.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/contracts*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-contract"></i>
+                                <p>Contracts</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.payments.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/payments*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-credit-card"></i>
+                                <p>Payments</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.messages.index') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/messages*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-comments"></i>
+                                <p>Messages</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dashboard.settings.edit') }}"
+                                class="nav-link {{ request()->is('admin/dashboard/settings*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-cogs"></i>
+                                <p>Site Settings</p>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
+                <span class="sidebar-section-label">Marketplace</span>
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
@@ -179,18 +262,21 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         </li>
                     </ul>
                 </nav>
+                <span class="sidebar-section-label">Access</span>
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
                         data-accordion="false">
-                        <li class="nav-item">
-                            <a href="{{ route('dashboard.roles.index') }}"
-                                class="nav-link {{ request()->is('admin/dashboard/roles*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-book"></i>
-                                <p>
-                                    Roles
-                                </p>
-                            </a>
-                        </li>
+                        @if (auth('admin')->user()->super_admin)
+                            <li class="nav-item">
+                                <a href="{{ route('dashboard.roles.index') }}"
+                                    class="nav-link {{ request()->is('admin/dashboard/roles*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>
+                                        Roles
+                                    </p>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->
@@ -205,6 +291,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
+                            <div class="admin-shell-chip mb-2">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Administrative Workspace</span>
+                            </div>
                             <h1 class="m-0">@yield('title', 'Page Title')</h1>
                         </div><!-- /.col -->
                         <div class="col-sm-6">
@@ -237,8 +327,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 Admin control center
             </div>
             <!-- Default to the left -->
-            <strong>Copyright &copy; {{ now()->year }} <a href="{{ route('home') }}">{{ config('app.name') }}</a>.</strong>
-            All rights reserved.
+            <strong>Copyright &copy; {{ now()->year }} <a href="{{ route('home') }}">{{ $siteSettings->site_name }}</a>.</strong>
+            {{ $siteSettings->copyright_text ?: 'All rights reserved.' }}
         </footer>
     </div>
     <!-- ./wrapper -->

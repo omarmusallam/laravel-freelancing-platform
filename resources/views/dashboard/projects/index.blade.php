@@ -5,11 +5,50 @@
 @section('content')
     <x-flash-message />
 
+    <div class="row">
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3>{{ $stats['open'] }}</h3>
+                    <p>Open Projects</p>
+                </div>
+                <div class="icon"><i class="fas fa-folder-open"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ $stats['in_progress'] }}</h3>
+                    <p>In Progress</p>
+                </div>
+                <div class="icon"><i class="fas fa-spinner"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3>{{ $stats['closed'] }}</h3>
+                    <p>Closed Projects</p>
+                </div>
+                <div class="icon"><i class="fas fa-lock"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>${{ number_format($stats['budget'], 0) }}</h3>
+                    <p>Budget Volume</p>
+                </div>
+                <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+            </div>
+        </div>
+    </div>
+
     <div class="card mb-3">
         <div class="card-body">
             <form action="{{ route('dashboard.projects.index') }}" method="get" class="row">
-                <div class="col-md-7">
-                    <input type="text" name="q" class="form-control" placeholder="Search projects" value="{{ $query }}">
+                <div class="col-md-5">
+                    <input type="text" name="q" class="form-control" placeholder="Search project, description, or client" value="{{ $query }}">
                 </div>
                 <div class="col-md-3">
                     <select name="status" class="form-control">
@@ -17,6 +56,13 @@
                         <option value="open" @selected($status === 'open')>Open</option>
                         <option value="in-progress" @selected($status === 'in-progress')>In Progress</option>
                         <option value="closed" @selected($status === 'closed')>Closed</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-control">
+                        <option value="">All types</option>
+                        <option value="fixed" @selected($type === 'fixed')>Fixed</option>
+                        <option value="hourly" @selected($type === 'hourly')>Hourly</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -48,18 +94,20 @@
                         <th>Project</th>
                         <th>Client</th>
                         <th>Category</th>
+                        <th>Type</th>
                         <th>Status</th>
                         <th>Budget</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($projects as $project)
+                    @forelse ($projects as $project)
                         <tr>
                             <td><input type="checkbox" class="bulk-project" name="project_ids[]" value="{{ $project->id }}"></td>
                             <td>{{ $project->title }}</td>
                             <td>{{ $project->user->name ?? 'Deleted user' }}</td>
                             <td>{{ $project->category->name ?? 'No category' }}</td>
+                            <td>{{ ucfirst($project->type) }}</td>
                             <td>{{ ucfirst($project->status) }}</td>
                             <td>${{ number_format($project->budget ?? 0, 0) }}</td>
                             <td class="text-right">
@@ -71,7 +119,11 @@
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No projects found.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
                 </table>
             </div>

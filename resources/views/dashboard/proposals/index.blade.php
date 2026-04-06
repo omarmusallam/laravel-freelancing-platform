@@ -5,10 +5,52 @@
 @section('content')
     <x-flash-message />
 
+    <div class="row">
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ $stats['pending'] }}</h3>
+                    <p>Pending Proposals</p>
+                </div>
+                <div class="icon"><i class="fas fa-hourglass-half"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>{{ $stats['accepted'] }}</h3>
+                    <p>Accepted Proposals</p>
+                </div>
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ $stats['declined'] }}</h3>
+                    <p>Declined Proposals</p>
+                </div>
+                <div class="icon"><i class="fas fa-times-circle"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>${{ number_format($stats['value'], 0) }}</h3>
+                    <p>Proposal Value</p>
+                </div>
+                <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+            </div>
+        </div>
+    </div>
+
     <div class="card mb-3">
         <div class="card-body">
             <form action="{{ route('dashboard.proposals.index') }}" method="get" class="row">
-                <div class="col-md-10">
+                <div class="col-md-8">
+                    <input type="text" name="q" class="form-control" value="{{ $query }}" placeholder="Search by freelancer, project, or proposal text">
+                </div>
+                <div class="col-md-2">
                     <select name="status" class="form-control">
                         <option value="">All statuses</option>
                         <option value="pending" @selected($status === 'pending')>Pending</option>
@@ -51,7 +93,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($proposals as $proposal)
+                    @forelse ($proposals as $proposal)
                         <tr>
                             <td><input type="checkbox" class="bulk-proposal" name="proposal_ids[]" value="{{ $proposal->id }}"></td>
                             <td>{{ $proposal->freelancer->name ?? 'Deleted user' }}</td>
@@ -68,7 +110,11 @@
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No proposals found.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
                 </table>
             </div>

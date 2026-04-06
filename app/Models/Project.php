@@ -45,6 +45,13 @@ class Project extends Model
         });
     }
 
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->newQueryWithoutScopes()
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->firstOrFail();
+    }
+
     public function scopeFilter(Builder $builder, $filters = [])
     {
         $filters = array_merge([

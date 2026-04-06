@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             RolesTableSeeder::class,
             CategoriesTableSeeder::class,
             AdminsTableSeeder::class,
-            PortfolioDemoSeeder::class,
+            SiteSettingsTableSeeder::class,
+            MarketplaceDemoSeeder::class,
         ]);
     }
 }

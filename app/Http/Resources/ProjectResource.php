@@ -17,8 +17,14 @@ class ProjectResource extends JsonResource
         return [
             'id' => $this->id,
             'category' => new CategoryResource($this->category),
+            'user' => [
+                'id' => $this->user_id,
+                'name' => optional($this->user)->name,
+            ],
             'title' => $this->title,
-            'description' => $this->description,
+            'description' => $this->desc,
+            'type' => $this->type,
+            'budget' => $this->budget,
             'update_time' => $this->updated_at,
             'status' => $this->status,
             'tags' => TagResource::collection($this->tags),

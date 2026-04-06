@@ -41,18 +41,38 @@ class NewPropsalNotification extends Notification
      */
     public function via($notifiable)
     {
-        $via = [Log::class, Nepras::class];
-        // $via = ['database', 'broadcast', 'nexmo'];
+        $via = [Log::class];
 
         if (!$notifiable instanceof AnonymousNotifiable) {
-            if ($notifiable->notify_mail) {
+            if ($this->canSendViaNepras($notifiable)) {
+                $via[] = Nepras::class;
+            }
+
+            if ($notifiable->notify_mail && filled($notifiable->routeNotificationForMail($this))) {
                 $via[] = 'mail';
             }
-            if ($notifiable->notify_sms) {
+
+            if ($notifiable->notify_sms && $this->canSendViaNexmo($notifiable)) {
                 $via[] = 'nexmo';
             }
         }
+
         return $via;
+    }
+
+    protected function canSendViaNepras($notifiable): bool
+    {
+        return filled(config('services.nepras.user'))
+            && filled(config('services.nepras.pass'))
+            && filled(config('services.nepras.sender'))
+            && filled($notifiable->routeNotificationForNepras($this));
+    }
+
+    protected function canSendViaNexmo($notifiable): bool
+    {
+        return filled(config('services.nexmo.key'))
+            && filled(config('services.nexmo.secret'))
+            && filled($notifiable->routeNotificationForNexmo($this));
     }
 
     /**

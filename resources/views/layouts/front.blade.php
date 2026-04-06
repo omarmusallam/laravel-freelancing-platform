@@ -5,9 +5,19 @@
 
     <!-- Basic Page Needs
 ================================================== -->
-    <title>{{ config('app.name') }} | {{ $title }}</title>
+    <title>{{ trim(($title ? $title . ' | ' : '') . ($siteSettings->meta_title ?: $siteSettings->site_name)) }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="{{ $siteSettings->meta_description }}">
+    <meta name="keywords" content="{{ $siteSettings->meta_keywords }}">
+    <meta property="og:title" content="{{ trim(($title ? $title . ' | ' : '') . ($siteSettings->meta_title ?: $siteSettings->site_name)) }}">
+    <meta property="og:description" content="{{ $siteSettings->meta_description }}">
+    @if ($siteSettings->ogImageUrl())
+        <meta property="og:image" content="{{ $siteSettings->ogImageUrl() }}">
+    @endif
+    @if ($siteSettings->faviconUrl())
+        <link rel="icon" type="image/png" href="{{ $siteSettings->faviconUrl() }}">
+    @endif
 
     <!-- CSS
 ================================================== -->
@@ -22,6 +32,13 @@
 </head>
 
 <body>
+
+    @php
+        $currentUser = auth()->user();
+        $userRoles = ($currentUser && method_exists($currentUser, 'roles')) ? $currentUser->roles : collect();
+        $isFreelancer = $userRoles->contains('name', 'freelancer');
+        $isClient = $userRoles->contains('name', 'client');
+    @endphp
 
     <!-- Wrapper -->
     <div id="wrapper">
@@ -52,7 +69,7 @@
                                 <div class="footer-rows-left">
                                     <div class="footer-row">
                                         <div class="footer-row-inner footer-logo">
-                                            <img src="{{ asset('assets/front/images/logo2.png') }}" alt="">
+                                            <img src="{{ $siteSettings->footerLogoUrl() }}" alt="">
                                         </div>
                                     </div>
                                 </div>
@@ -65,25 +82,25 @@
                                         <div class="footer-row-inner">
                                             <ul class="footer-social-links">
                                                 <li>
-                                                    <a href="{{ route('home') }}" title="Home" data-tippy-placement="bottom"
+                                                    <a href="{{ $siteSettings->facebook_url ?: route('home') }}" title="Facebook" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-facebook-f"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ route('projects.browse') }}" title="Projects" data-tippy-placement="bottom"
+                                                    <a href="{{ $siteSettings->twitter_url ?: route('projects.browse') }}" title="Twitter" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-twitter"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ auth()->check() ? route('client.projects.create') : route('register') }}" title="Post a Job" data-tippy-placement="bottom"
+                                                    <a href="{{ $siteSettings->instagram_url ?: (auth()->check() ? route('client.projects.create') : route('register')) }}" title="Instagram" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-google-plus-g"></i>
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="{{ auth()->check() ? route('messages') : route('login') }}" title="Messages" data-tippy-placement="bottom"
+                                                    <a href="{{ $siteSettings->linkedin_url ?: (auth()->check() ? route('messages') : route('login')) }}" title="LinkedIn" data-tippy-placement="bottom"
                                                         data-tippy-theme="light">
                                                         <i class="icon-brand-linkedin-in"></i>
                                                     </a>
@@ -113,8 +130,8 @@
                                 <h3>For Candidates</h3>
                                 <ul>
                                     <li><a href="{{ route('projects.browse') }}"><span>Browse Jobs</span></a></li>
-                                    <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('register') }}"><span>Freelancer Profile</span></a></li>
-                                    <li><a href="{{ auth()->check() ? route('freelancer.proposals.index') : route('login') }}"><span>My Proposals</span></a></li>
+                                    <li><a href="{{ $isFreelancer ? route('freelancer.profile.edit') : route('register') }}"><span>Freelancer Profile</span></a></li>
+                                    <li><a href="{{ $isFreelancer ? route('freelancer.proposals.index') : route('login') }}"><span>My Proposals</span></a></li>
                                     <li><a href="{{ auth()->check() ? route('messages') : route('login') }}"><span>Messages</span></a></li>
                                 </ul>
                             </div>
@@ -126,8 +143,8 @@
                                 <h3>For Employers</h3>
                                 <ul>
                                     <li><a href="{{ route('projects.browse') }}"><span>Browse Projects</span></a></li>
-                                    <li><a href="{{ auth()->check() ? route('client.projects.create') : route('login') }}"><span>Post a Job</span></a></li>
-                                    <li><a href="{{ auth()->check() ? route('client.projects.index') : route('login') }}"><span>Manage Jobs</span></a></li>
+                                    <li><a href="{{ $isClient ? route('client.projects.create') : route('login') }}"><span>Post a Job</span></a></li>
+                                    <li><a href="{{ $isClient ? route('client.projects.index') : route('login') }}"><span>Manage Jobs</span></a></li>
                                     <li><a href="{{ route('register') }}"><span>Create Account</span></a></li>
                                 </ul>
                             </div>
@@ -151,7 +168,7 @@
                                 <h3>Account</h3>
                                 <ul>
                                     <li><a href="{{ route('login') }}"><span>Log In</span></a></li>
-                                    <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('register') }}"><span>My Account</span></a></li>
+                                    <li><a href="{{ $isFreelancer ? route('freelancer.profile.edit') : ($isClient ? route('client.projects.index') : route('register')) }}"><span>My Account</span></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -159,11 +176,15 @@
                         <!-- Newsletter -->
                         <div class="col-xl-4 col-lg-4 col-md-12">
                             <h3><i class="icon-feather-mail"></i> Sign Up For a Newsletter</h3>
-                            <p>Weekly breaking news, analysis and cutting edge advices on job searching.</p>
+                            <p>{{ $siteSettings->site_tagline ?: 'Weekly breaking news, analysis and cutting edge advices on job searching.' }}</p>
                             <form action="{{ route('register') }}" method="get" class="newsletter">
                                 <input type="text" name="fname" placeholder="Create your account to explore more" readonly>
                                 <button type="submit"><i class="icon-feather-arrow-right"></i></button>
                             </form>
+                            <div class="mt-3 text-muted">
+                                <div>{{ $siteSettings->contact_email }}</div>
+                                <div>{{ $siteSettings->contact_phone }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -175,7 +196,7 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-12">
-                            © 2018 <strong>{{ config('app.name') }}</strong>. All Rights Reserved.
+                            &copy; {{ now()->year }} <strong>{{ $siteSettings->site_name }}</strong>. {{ $siteSettings->copyright_text ?: 'All Rights Reserved.' }}
                         </div>
                     </div>
                 </div>

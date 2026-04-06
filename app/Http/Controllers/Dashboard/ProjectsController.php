@@ -14,26 +14,45 @@ class ProjectsController extends Controller
     {
         $query = trim((string) $request->input('q', ''));
         $status = $request->input('status');
+        $type = $request->input('type');
 
-        $projects = Project::withoutGlobalScope('active')
+        $projectsQuery = Project::withoutGlobalScope('active');
+
+        $projects = $projectsQuery
             ->with(['user', 'category', 'tags'])
             ->when($query !== '', function ($builder) use ($query) {
                 $builder->where(function ($search) use ($query) {
                     $search->where('title', 'like', '%' . $query . '%')
-                        ->orWhere('desc', 'like', '%' . $query . '%');
+                        ->orWhere('desc', 'like', '%' . $query . '%')
+                        ->orWhereHas('user', function ($userQuery) use ($query) {
+                            $userQuery->where('name', 'like', '%' . $query . '%')
+                                ->orWhere('email', 'like', '%' . $query . '%');
+                        });
                 });
             })
             ->when(in_array($status, ['open', 'in-progress', 'closed'], true), function ($builder) use ($status) {
                 $builder->where('projects.status', $status);
             })
+            ->when(in_array($type, ['fixed', 'hourly'], true), function ($builder) use ($type) {
+                $builder->where('projects.type', $type);
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString();
+
+        $stats = [
+            'open' => Project::query()->count(),
+            'in_progress' => Project::withoutGlobalScope('active')->where('status', 'in-progress')->count(),
+            'closed' => Project::withoutGlobalScope('active')->where('status', 'closed')->count(),
+            'budget' => Project::withoutGlobalScope('active')->sum('budget'),
+        ];
 
         return view('dashboard.projects.index', [
             'projects' => $projects,
             'query' => $query,
             'status' => $status,
+            'type' => $type,
+            'stats' => $stats,
         ]);
     }
 

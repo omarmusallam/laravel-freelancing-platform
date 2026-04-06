@@ -8,6 +8,18 @@
     <div class="row">
         <div class="col-lg-8">
             <div class="card">
+                <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">Proposal Decision Desk</h5>
+                        <p class="text-muted mb-0">Review the offer, then move it through the workflow with confidence.</p>
+                    </div>
+                    <div class="d-flex flex-wrap mt-2 mt-lg-0">
+                        <a href="{{ route('dashboard.projects.show', $proposal->project_id) }}" class="btn btn-outline-primary mr-2 mb-2">Open Project</a>
+                        <a href="{{ route('dashboard.contracts.index', ['q' => $proposal->project->title ?? '']) }}" class="btn btn-outline-dark mr-2 mb-2">Related Contracts</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
                 <div class="card-body">
                     <form action="{{ route('dashboard.proposals.update', $proposal) }}" method="post">
                         @csrf
@@ -60,6 +72,8 @@
                     <p><strong>Freelancer:</strong> {{ $proposal->freelancer->name ?? 'Deleted user' }}</p>
                     <p><strong>Project:</strong> {{ $proposal->project->title ?? 'Deleted project' }}</p>
                     <p><strong>Client:</strong> {{ $proposal->project->user->name ?? 'Deleted user' }}</p>
+                    <p><strong>Status:</strong> {{ ucfirst($proposal->status) }}</p>
+                    <p><strong>Commercial value:</strong> ${{ number_format($proposal->cost, 0) }}</p>
                     <p class="mb-0"><strong>Submitted:</strong> {{ $proposal->created_at->diffForHumans() }}</p>
                 </div>
             </div>

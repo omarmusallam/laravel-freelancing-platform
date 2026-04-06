@@ -6,10 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\ProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
-use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,20 +46,19 @@ class ProjectsController extends Controller
      */
     public function store(ProjectRequest $request)
     {
-        $user = User::find(1);
+        $user = $request->user();
 
         $data = $request->except('attachments');
+        $data['status'] = $data['status'] ?? 'open';
 
         $project = $user->projects()->create($data);
 
-        $tags = explode(',', $request->input('tags'));
+        $tags = $this->parseTags($request->input('tags'));
         $project->syncTags($tags);
 
-        return $project;
-        // return response($project, 201);
-        // return response()->json($project, 201);
-        // return Response::json($project, 201);
-        // return new JsonResponse($project, 201);
+        return (new ProjectResource($project->load(['category', 'tags', 'user'])))
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -87,18 +83,34 @@ class ProjectsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['sometimes', 'required', 'string'],
+            'desc' => ['sometimes', 'required', 'string'],
             'type' => ['sometimes', 'required', 'in:hourly,fixed'],
+            'category_id' => ['sometimes', 'required', 'exists:categories,id'],
             'budget' => ['nullable', 'numeric', 'min:0'],
+            'tags' => ['nullable', 'string'],
         ]);
 
-        $project = Project::findOrFail($id);
+        $project = Project::withoutGlobalScope('active')->findOrFail($id);
+        $user = $request->user();
 
-        $project->update($request->all());
+        if ((int) $project->user_id !== (int) $user->id && !$user->tokenCan('projects.update')) {
+            return Response::json([
+                'message' => 'Permission denied!',
+            ], 403);
+        }
 
-        return $project;
+        $tags = $data['tags'] ?? null;
+        unset($data['tags']);
+
+        $project->update($data);
+
+        if ($tags !== null) {
+            $project->syncTags($this->parseTags($tags));
+        }
+
+        return new ProjectResource($project->fresh()->load(['category', 'tags', 'user']));
     }
 
     /**
@@ -109,9 +121,9 @@ class ProjectsController extends Controller
      */
     public function destroy(Project $project)
     {
-        $user = Auth::guard('sanctum')->user();
+        $user = request()->user();
 
-        if (!$user->tokenCan('projects.delete')) {
+        if ((int) $project->user_id !== (int) $user->id && !$user->tokenCan('projects.delete')) {
             return Response::json([
                 'message' => 'Permission denied!',
             ], 403);
@@ -126,8 +138,21 @@ class ProjectsController extends Controller
         }
 
         return [
-            'message' => 'Porject deleted',
+            'message' => 'Project deleted',
         ];
+    }
+
+    protected function parseTags(?string $tags): array
+    {
+        if (!$tags) {
+            return [];
+        }
+
+        return collect(explode(',', $tags))
+            ->map(fn ($tag) => trim($tag))
+            ->filter()
+            ->values()
+            ->all();
     }
 
 }

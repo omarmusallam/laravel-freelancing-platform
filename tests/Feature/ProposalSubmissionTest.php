@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Project;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\NewPropsalNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -20,6 +22,11 @@ class ProposalSubmissionTest extends TestCase
 
         $client = User::factory()->create();
         $freelancer = User::factory()->create();
+        $freelancerRole = Role::create([
+            'name' => 'freelancer',
+            'abilities' => ['proposals.create'],
+        ]);
+        $freelancer->roles()->attach($freelancerRole);
         $category = Category::create([
             'name' => 'Development',
             'slug' => 'development',
@@ -58,6 +65,11 @@ class ProposalSubmissionTest extends TestCase
         Notification::fake();
 
         $user = User::factory()->create();
+        $freelancerRole = Role::create([
+            'name' => 'freelancer',
+            'abilities' => ['proposals.create'],
+        ]);
+        $user->roles()->attach($freelancerRole);
         $category = Category::create([
             'name' => 'Design',
             'slug' => 'design',
@@ -84,5 +96,57 @@ class ProposalSubmissionTest extends TestCase
 
         $this->assertDatabaseCount('proposals', 0);
         Notification::assertNothingSent();
+    }
+
+    public function test_proposal_submission_succeeds_even_if_nepras_provider_returns_failure_code()
+    {
+        config([
+            'services.nepras.user' => 'demo-user',
+            'services.nepras.pass' => 'demo-pass',
+            'services.nepras.sender' => 'ELANCER',
+        ]);
+
+        Http::fake([
+            '*' => Http::response('-100', 200),
+        ]);
+
+        $client = User::factory()->create([
+            'mobile_number' => '+970590300001',
+        ]);
+        $freelancer = User::factory()->create();
+        $freelancerRole = Role::create([
+            'name' => 'freelancer',
+            'abilities' => ['proposals.create'],
+        ]);
+        $freelancer->roles()->attach($freelancerRole);
+        $category = Category::create([
+            'name' => 'Automation',
+            'slug' => 'automation',
+        ]);
+
+        $project = Project::withoutGlobalScope('active')->create([
+            'title' => 'Automate reporting dashboard',
+            'desc' => 'Build a reliable reporting workflow.',
+            'category_id' => $category->id,
+            'user_id' => $client->id,
+            'status' => 'open',
+            'type' => 'fixed',
+            'budget' => 2100,
+        ]);
+
+        $this->actingAs($freelancer)
+            ->post(route('freelancer.proposals.store', $project), [
+                'description' => 'I can build this workflow with clean delivery steps.',
+                'cost' => 1900,
+                'duration' => 14,
+                'duration_unit' => 'day',
+            ])
+            ->assertRedirect(route('projects.show', $project));
+
+        $this->assertDatabaseHas('proposals', [
+            'freelancer_id' => $freelancer->id,
+            'project_id' => $project->id,
+            'status' => 'pending',
+        ]);
     }
 }

@@ -21,12 +21,21 @@ class ProposalsController extends Controller
         $user = Auth::guard('web')->user();
 
         $proposals = $user->proposals()
-            ->with('project')
+            ->with(['project.category.parent', 'project.user'])
             ->latest()
             ->paginate();
 
+        $allProposals = $user->proposals()->get();
+        $stats = [
+            'total' => $allProposals->count(),
+            'pending' => $allProposals->where('status', 'pending')->count(),
+            'accepted' => $allProposals->where('status', 'accepted')->count(),
+            'declined' => $allProposals->where('status', 'declined')->count(),
+        ];
+
         return view('freelancer.proposals.index', [
             'proposals' => $proposals,
+            'stats' => $stats,
         ]);
     }
 
@@ -82,12 +91,15 @@ class ProposalsController extends Controller
             'duration' => ['required', 'int', 'min:1'],
             'duration_unit' => ['required', 'in:day,week,month,year'],
         ]);
-        $request->merge([
+
+        $proposal = $user->proposals()->create([
             'project_id' => $project_id,
+            'description' => (string) $request->input('description'),
+            'cost' => $request->input('cost'),
+            'duration' => $request->input('duration'),
+            'duration_unit' => $request->input('duration_unit'),
             'status' => 'pending',
         ]);
-
-        $proposal = $user->proposals()->create($request->all());
 
         $project->user->notify(new NewPropsalNotification($proposal, $user));
 

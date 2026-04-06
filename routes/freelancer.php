@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Route;
 Route::group([
     'prefix' => 'freelancer',
     'as' => 'freelancer.',
-    'middleware' => ['auth:web']
+    'middleware' => ['auth:web', 'role:freelancer']
 ], function () {
-    
+
     Route::get('proposals', [ProposalsController::class, 'index'])
         ->name('proposals.index');
     Route::get('proposals/{project}/create', [ProposalsController::class, 'create'])
@@ -17,6 +17,8 @@ Route::group([
     Route::post('proposals/{project}/create', [ProposalsController::class, 'store'])
         ->name('proposals.store');
 
+    Route::get('contracts', [ProfileController::class, 'contracts'])
+        ->name('contracts.index');
     Route::get('profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
     Route::put('profile', [ProfileController::class, 'update']);

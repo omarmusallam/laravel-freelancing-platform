@@ -1,190 +1,383 @@
-<header id="header-container" class="fullwidth">
+@php
+    $currentUser = auth()->user();
+    $userRoles = ($currentUser && method_exists($currentUser, 'roles')) ? $currentUser->roles : collect();
+    $isFreelancer = $userRoles->contains('name', 'freelancer');
+    $isClient = $userRoles->contains('name', 'client');
 
-    <!-- Header -->
-    <div id="header">
-        <div class="container">
+    $primaryLinks = [
+        ['label' => __('Home'), 'url' => route('home')],
+        ['label' => __('Find Work'), 'url' => route('projects.browse')],
+        ['label' => __('For Employers'), 'url' => $isClient ? route('client.projects.index') : route('login')],
+    ];
 
-            <!-- Left Side Content -->
-            <div class="left-side">
+    if (auth()->check()) {
+        $primaryLinks[] = [
+            'label' => __('Dashboard'),
+            'url' => $isFreelancer ? route('freelancer.profile.edit') : ($isClient ? route('client.projects.index') : route('home')),
+        ];
+    }
+@endphp
 
-                <!-- Logo -->
-                <div id="logo">
-                    <a href="{{ route('home') }}"><img src="{{ asset('assets/front/images/logo.png') }}"
-                            alt="logo"></a>
-                </div>
+<style>
+    .frontsite-header {
+        position: sticky;
+        top: 0;
+        z-index: 1100;
+        margin-top: 0 !important;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(18px);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.05);
+    }
 
-                <!-- Main Navigation -->
-                <nav id="navigation">
-                    <ul id="responsive">
+    .frontsite-header__wrap {
+        width: min(1240px, calc(100% - 32px));
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 84px;
+    }
 
-                        <li><a href="{{ route('home') }}">{{ __('Home') }}</a>
-                            {{-- {{ route('home') }} --}}
-                            <ul class="dropdown-nav">
-                                <li><a href="{{ route('home') }}">{{ __('Home') }}</a></li>
-                            </ul>
-                        </li>
+    .frontsite-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+    }
 
-                        <li><a href="{{ route('projects.browse') }}">{{ trans('Find Work') }}</a>
-                            <ul class="dropdown-nav">
-                                <li><a href="{{ route('projects.browse') }}">@lang('Browse Jobs')</a></li>
-                                @auth
-                                    <li><a href="{{ route('freelancer.proposals.index') }}">@lang('My Proposals')</a></li>
-                                @endauth
-                            </ul>
-                        </li>
+    .frontsite-brand img {
+        max-height: 42px;
+        width: auto;
+        flex-shrink: 0;
+    }
 
-                        <li><a href="{{ auth()->check() ? route('client.projects.index') : route('login') }}">{{ __('For Employers') }}</a>
-                            <ul class="dropdown-nav">
-                                <li><a href="{{ route('projects.browse') }}">{{ __('Browse Projects') }}</a></li>
-                                @auth
-                                    <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Freelancer Profile') }}</a></li>
-                                    <li><a href="{{ route('client.projects.create') }}">{{ __('Post a Job') }}</a></li>
-                                @else
-                                    <li><a href="{{ route('register') }}">{{ __('Create Account') }}</a></li>
-                                    <li><a href="{{ route('login') }}">{{ __('Post a Job') }}</a></li>
-                                @endauth
-                            </ul>
-                        </li>
+    .frontsite-brand__text {
+        min-width: 0;
+    }
 
-                        <li><a href="{{ auth()->check() ? route('freelancer.profile.edit') : route('login') }}">{{ __('Dashboard') }}</a>
-                            <ul class="dropdown-nav">
-                                @auth
-                                    <li><a href="{{ route('client.projects.index') }}">{{ __('My Jobs') }}</a></li>
-                                    <li><a href="{{ route('messages') }}">{{ __('Messages') }}</a></li>
-                                    <li><a href="{{ route('freelancer.profile.edit') }}">{{ __('Settings') }}</a></li>
-                                @else
-                                    <li><a href="{{ route('login') }}">{{ __('Login') }}</a></li>
-                                    <li><a href="{{ route('register') }}">{{ __('Register') }}</a></li>
-                                @endauth
-                            </ul>
-                        </li>
+    .frontsite-brand__text strong {
+        display: block;
+        color: #0f172a;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.1;
+    }
 
-                        <li>
-                            <a href="#" class="current">{{ __('Language') }}</a>
-                            <ul class="dropdown-nav">
-                                @foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
-                                    <li>
-                                        <a rel="alternate" hreflang="{{ $localeCode }}"
-                                            href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
-                                            {{ $properties['native'] }}
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </li>
+    .frontsite-brand__text span {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 360px;
+    }
 
-                    </ul>
-                </nav>
-                <div class="clearfix"></div>
-                <!-- Main Navigation / End -->
+    .frontsite-nav {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        justify-content: center;
+    }
 
+    .frontsite-nav a,
+    .frontsite-nav details summary {
+        list-style: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 12px;
+        color: #334155;
+        font-weight: 700;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .frontsite-nav a:hover,
+    .frontsite-nav details summary:hover,
+    .frontsite-nav a[aria-current="page"] {
+        background: rgba(37, 99, 235, 0.08);
+        color: #1d4ed8;
+    }
+
+    .frontsite-nav details {
+        position: relative;
+    }
+
+    .frontsite-nav details summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .frontsite-nav details[open] .frontsite-language {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .frontsite-language {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        min-width: 180px;
+        padding: 10px;
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(6px);
+        transition: all 0.2s ease;
+    }
+
+    .frontsite-language a {
+        display: flex;
+        justify-content: flex-start;
+        width: 100%;
+        min-height: 40px;
+        border-radius: 10px;
+    }
+
+    .frontsite-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .frontsite-contact {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 48px;
+        padding: 0 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(248, 250, 252, 0.9);
+    }
+
+    .frontsite-contact i {
+        color: #f97316;
+        font-size: 1.1rem;
+    }
+
+    .frontsite-contact span {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.72rem;
+        line-height: 1.1;
+    }
+
+    .frontsite-contact strong {
+        display: block;
+        color: #0f172a;
+        font-size: 0.92rem;
+        line-height: 1.1;
+        font-weight: 800;
+    }
+
+    .frontsite-auth {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 14px;
+        font-weight: 800;
+        color: #fff !important;
+        background: linear-gradient(135deg, #f97316, #2563eb);
+        box-shadow: 0 16px 28px rgba(37, 99, 235, 0.2);
+    }
+
+    .frontsite-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px 6px 6px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: #fff;
+    }
+
+    .frontsite-user img {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        object-fit: cover;
+    }
+
+    .frontsite-user strong {
+        display: block;
+        color: #0f172a;
+        font-size: 0.9rem;
+        line-height: 1.15;
+    }
+
+    .frontsite-user span {
+        display: block;
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+
+    .frontsite-mobile-toggle {
+        display: none;
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: #fff;
+        color: #0f172a;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .frontsite-mobile-menu {
+        display: none;
+        width: min(1240px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 0 0 16px;
+    }
+
+    .frontsite-mobile-menu nav {
+        display: grid;
+        gap: 8px;
+        padding: 14px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+    }
+
+    .frontsite-mobile-menu a {
+        display: flex;
+        min-height: 44px;
+        align-items: center;
+        padding: 0 12px;
+        border-radius: 12px;
+        color: #334155;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1100px) {
+        .frontsite-nav,
+        .frontsite-contact {
+            display: none;
+        }
+
+        .frontsite-mobile-toggle {
+            display: inline-flex;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .frontsite-header__wrap,
+        .frontsite-mobile-menu {
+            width: min(100% - 24px, 1240px);
+        }
+
+        .frontsite-brand__text span {
+            max-width: 180px;
+        }
+    }
+</style>
+
+<header class="frontsite-header">
+    <div class="frontsite-header__wrap">
+        <a href="{{ route('home') }}" class="frontsite-brand">
+            <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}">
+            <div class="frontsite-brand__text">
+                <strong>{{ $siteSettings->site_name }}</strong>
+                <span>{{ $siteSettings->site_tagline }}</span>
             </div>
-            <!-- Left Side Content / End -->
+        </a>
 
+        <nav class="frontsite-nav" aria-label="Primary">
+            @foreach ($primaryLinks as $link)
+                <a href="{{ $link['url'] }}" @if (url()->current() === $link['url']) aria-current="page" @endif>
+                    {{ $link['label'] }}
+                </a>
+            @endforeach
 
-            <!-- Right Side Content / End -->
-            <div class="right-side">
+            <details>
+                <summary>{{ __('Language') }}</summary>
+                <div class="frontsite-language">
+                    @foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                        <a rel="alternate" hreflang="{{ $localeCode }}"
+                            href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
+                            {{ $properties['native'] }}
+                        </a>
+                    @endforeach
+                </div>
+            </details>
+        </nav>
 
-                @auth
-                    <x-notification-menu />
-                @endauth
+        <div class="frontsite-actions">
+            <div class="frontsite-contact">
+                <i class="icon-feather-phone-call"></i>
+                <div>
+                    <span>Direct contact</span>
+                    <strong>{{ $siteSettings->contact_phone }}</strong>
+                </div>
+            </div>
 
-                <!-- User Menu -->
-                <div class="header-widget">
-
-                    <!-- Messages -->
-                    <div class="header-notifications user-menu">
-                        @auth
-                            <div class="header-notifications-trigger">
-                                <a href="#">
-                                    <div class=""><img src="{{ Auth::user()->profile_photo_url }}"
-                                            alt=""
-                                            style="border: 2px solid #2a41e8;
-                                    padding: 2px;
-                                    border-radius: 50%;
-                                    border-top-color: #47bb67;
-                                    border-left-color: #47bb67;
-                                    width: 60px;
-                                    height: 60px;">
-                                    </div>
-                                </a>
-                            </div>
-                        @else
-                            <a class="header-notifications-trigger"
-                                href="{{ route('login') }}">{{ __('Login') }}</a>
-                        @endauth
-
-                        <!-- Dropdown -->
-                        @auth
-                            <div class="header-notifications-dropdown">
-
-                                <!-- User Status -->
-                                <div class="user-status">
-
-                                    <!-- User Name / Avatar -->
-                                    <div class="user-details">
-                                        <div class=""><a href="{{ route('freelancer.profile.edit') }}"><img
-                                                    src="{{ Auth::user()->profile_photo_url }}" alt=""
-                                                    style="border: 2px solid #2a41e8;
-                                            padding: 2px;
-                                            border-radius: 50%;
-                                            border-top-color: #47bb67;
-                                            border-left-color: #47bb67;
-                                            width: 60px;
-                                            height: 60px;"></a>
-                                        </div>
-                                        <div class="user-name">
-                                            <a
-                                                href="{{ route('freelancer.profile.edit') }}">{{ Auth::user()->name }}</a><span>{{ __('Freelancer') }}</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- User Status Switcher -->
-                                    <div class="status-switch" id="snackbar-user-status">
-                                        <label class="user-online current-status">{{ __('Online') }}</label>
-                                        <label class="user-invisible">{{ __('Invisible') }}</label>
-                                        <!-- Status Indicator -->
-                                        <span class="status-indicator" aria-hidden="true"></span>
-                                    </div>
-                                </div>
-
-                                <ul class="user-menu-small-nav">
-                                    <li><a href="{{ route('client.projects.index') }}"><i class="icon-material-outline-dashboard"></i>
-                                            {{ __('My Jobs') }}</a></li>
-                                    <li><a href="{{ route('freelancer.profile.edit') }}"><i class="icon-material-outline-settings"></i>
-                                            {{ __('Settings') }}</a></li>
-                                    <li><a href="{{ route('logout') }}"
-                                            onclick="event.preventDefault(); document.getElementById('logout').submit();"><i
-                                                class="icon-material-outline-power-settings-new"></i>
-                                            {{ __('Logout') }}</a>
-                                    </li>
-                                </ul>
-                                <form action="{{ route('logout') }}" method="post" style="display: none;"
-                                    id="logout">
-                                    @csrf
-                                </form>
-
-                            </div>
-                        @endauth
+            @auth
+                <a href="{{ $isFreelancer ? route('freelancer.profile.edit') : ($isClient ? route('client.projects.index') : route('home')) }}"
+                    class="frontsite-user">
+                    <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}">
+                    <div>
+                        <strong>{{ Auth::user()->name }}</strong>
+                        <span>{{ $isFreelancer ? __('Freelancer') : __('Client') }}</span>
                     </div>
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="frontsite-auth">{{ __('Login') }}</a>
+            @endauth
 
-                </div>
-                <!-- User Menu / End -->
-
-                <!-- Mobile Navigation Button -->
-                <span class="mmenu-trigger">
-                    <button class="hamburger hamburger--collapse" type="button">
-                        <span class="hamburger-box">
-                            <span class="hamburger-inner"></span>
-                        </span>
-                    </button>
-                </span>
-
-            </div>
-            <!-- Right Side Content / End -->
-
+            <button type="button" class="frontsite-mobile-toggle" data-frontsite-toggle aria-label="Open menu">
+                <i class="icon-feather-menu"></i>
+            </button>
         </div>
     </div>
-    <!-- Header / End -->
 
+    <div class="frontsite-mobile-menu" data-frontsite-menu hidden>
+        <nav>
+            @foreach ($primaryLinks as $link)
+                <a href="{{ $link['url'] }}">{{ $link['label'] }}</a>
+            @endforeach
+
+            @foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                <a rel="alternate" hreflang="{{ $localeCode }}"
+                    href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
+                    {{ __('Language') }}: {{ $properties['native'] }}
+                </a>
+            @endforeach
+        </nav>
+    </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.querySelector('[data-frontsite-toggle]');
+        const menu = document.querySelector('[data-frontsite-menu]');
+
+        if (!toggle || !menu) {
+            return;
+        }
+
+        toggle.addEventListener('click', function() {
+            const isHidden = menu.hasAttribute('hidden');
+            if (isHidden) {
+                menu.removeAttribute('hidden');
+            } else {
+                menu.setAttribute('hidden', 'hidden');
+            }
+        });
+    });
+</script>

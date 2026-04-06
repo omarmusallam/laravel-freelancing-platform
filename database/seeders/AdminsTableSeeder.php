@@ -15,12 +15,14 @@ class AdminsTableSeeder extends Seeder
      */
     public function run()
     {
-        Admin::create([
-            'name' => 'Omar Musallam',
-            'email' => 'omar@gmail.com',
-            'password' => Hash::make('password123'),
-            'super_admin' => 1,
-            'status' => 'active',
-        ]);
+        Admin::updateOrCreate(
+            ['email' => 'omar@gmail.com'],
+            [
+                'name' => 'Omar Musallam',
+                'password' => Hash::make('password123'),
+                'super_admin' => 1,
+                'status' => 'active',
+            ]
+        );
     }
 }
